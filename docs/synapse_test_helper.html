@@ -1,0 +1,1405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>synapse_test_helper.synapse_test_helper API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>synapse_test_helper.synapse_test_helper</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import logging
+import os
+import uuid
+import time
+import tempfile
+from pathlib import PurePath
+import synapseclient
+from synapseclient import Project, Folder, File, Team, Wiki
+
+
+class SynapseTestHelper:
+    &#34;&#34;&#34;Test helper for working with Synapse.&#34;&#34;&#34;
+
+    def __init__(self):
+        self._test_id = self._uniq_str()
+        self.trash = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.dispose()
+
+    _synapse_client = None
+
+    @classmethod
+    def configure(cls, synapse_client):
+        &#34;&#34;&#34;Sets the Synapse client to use for Synapse access.
+
+        Args:
+            synapse_client: A logged in instance of synapseclient.Synapse.
+
+        Returns:
+            True if successful otherwise raises an exception.
+        &#34;&#34;&#34;
+        cls.deconfigure()
+
+        if not isinstance(synapse_client, synapseclient.Synapse):
+            raise Exception(&#39;synapse_client must be an instance if synapseclient.Synapse.&#39;)
+
+        if synapse_client.credentials is None:
+            raise Exception(&#39;synapse_client must be logged in.&#39;)
+
+        cls._synapse_client = synapse_client
+
+        return cls.configured()
+
+    @classmethod
+    def deconfigure(cls):
+        &#34;&#34;&#34;Removes configuration.&#34;&#34;&#34;
+        cls._synapse_client = None
+        return not cls.configured()
+
+    @classmethod
+    def configured(cls):
+        &#34;&#34;&#34;Gets if configured.&#34;&#34;&#34;
+        return cls._synapse_client is not None
+
+    def client(self):
+        &#34;&#34;&#34;Gets the synapseclient.&#34;&#34;&#34;
+        return self._synapse_client
+
+    def _uniq_str(self):
+        &#34;&#34;&#34;Generates a unique Synapse friendly string.&#34;&#34;&#34;
+        return str(uuid.uuid4()).replace(&#39;-&#39;, &#39;_&#39;)
+
+    def test_id(self):
+        &#34;&#34;&#34;Gets a unique value to use as a test identifier.
+
+        This string can be used to help identify the test instance that created the object.
+        &#34;&#34;&#34;
+        return self._test_id
+
+    def uniq_name(self, prefix=None, postfix=None):
+        &#34;&#34;&#34;Get a unique string that is Synapse friendly with the test_id in it.
+
+        Args:
+            prefix: Optional prefix.
+            postfix: Optional postfix.
+
+        Returns:
+            String
+        &#34;&#34;&#34;
+        if prefix is None:
+            prefix = self._uniq_str()
+        if postfix is None:
+            postfix = self._uniq_str()
+        return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id(), uuid.uuid4().hex, postfix)
+
+    def fake_synapse_id(self):
+        &#34;&#34;&#34;Gets a Synapse entity ID that does not exist in Synapse.
+
+        Returns:
+            String
+        &#34;&#34;&#34;
+        return &#39;syn000&#39;
+
+    DISPOSABLE_TYPES = [
+        synapseclient.Project,
+        synapseclient.Folder,
+        synapseclient.File,
+        synapseclient.Team,
+        synapseclient.Wiki
+    ]
+
+    DISPOSABLE_SYNAPSE_TYPES = DISPOSABLE_TYPES
+
+    SKIP_SYNAPSE_TRASH_TYPES = [
+        synapseclient.Project,
+        synapseclient.Folder,
+        synapseclient.File,
+    ]
+
+    def is_diposable(self, obj):
+        &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
+        return type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj)
+
+    def _verify_is_disposable(self, obj):
+        &#34;&#34;&#34;Checks that an object can be disposed else raises an exception.&#34;&#34;&#34;
+        if not self.is_diposable(obj):
+            raise ValueError(&#39;Non-disposable type: {0}&#39;.format(type(obj)))
+
+    def dispose_of(self, *disposable_objects):
+        &#34;&#34;&#34;Adds a disposable object to the list of objects to be deleted.&#34;&#34;&#34;
+        for obj in disposable_objects:
+            self._verify_is_disposable(obj)
+            if obj not in self.trash:
+                self.trash.append(obj)
+
+    def dispose(self, *disposable_objects):
+        &#34;&#34;&#34;Deletes any disposable objects that were created during testing.
+        This method needs to be manually called after each or all tests are done, or use the context manager.
+
+        Args:
+            *disposable_objects: Objects to delete. Can be in the trash or not.
+
+        Returns:
+            None
+        &#34;&#34;&#34;
+        projects = []
+        paths = []
+        others = []
+
+        objects_to_dispose = disposable_objects if disposable_objects else self.trash
+
+        for obj in objects_to_dispose:
+            self._verify_is_disposable(obj)
+            if isinstance(obj, Project):
+                projects.append(obj)
+            elif self._is_path(obj):
+                paths.append(obj)
+            else:
+                others.append(obj)
+
+        # Sort the temp files and folders so each file is removed first then the empty directory.
+        # If the directory is not empty then this process should not be the one to delete it. This is for safety!
+        paths.sort(reverse=True)
+
+        # Projects need to be deleted first.
+        for obj in projects + others + paths:
+            try:
+                if type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
+                    self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
+                elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
+                    self.client().delete(obj)
+                elif self._is_path(obj):
+                    if os.path.isdir(obj):
+                        os.rmdir(obj)
+                    elif os.path.isfile(obj):
+                        os.remove(obj)
+            except:
+                pass
+
+            if obj in self.trash:
+                self.trash.remove(obj)
+
+    def _is_path(self, obj):
+        &#34;&#34;&#34;Gets if the object is a Path like object.&#34;&#34;&#34;
+        try:
+            return PurePath(obj).is_absolute()
+        except:
+            return False
+
+    def create_project(self, name=None, prefix=None, **kwargs):
+        &#34;&#34;&#34;Creates a new Project and adds it to the trash queue.
+
+        Args:
+            name: Name of the project. A unique name will be generated if not set. (optional)
+            prefix: Prefix to add to the generated project name if the name arg is None. (optional)
+            **kwargs:
+
+        Returns:
+            Project
+        &#34;&#34;&#34;
+        kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+        project = self.client().store(Project(**kwargs))
+        self.dispose_of(project)
+        return project
+
+    def create_folder(self, name=None, prefix=None, parent=None, **kwargs):
+        &#34;&#34;&#34;Creates a new Folder and adds it to the trash queue.
+
+        Args:
+            name: Name of the folder. A unique name will be generated if not set. (optional)
+            prefix: Prefix to add to the generated folder name if the name arg is None. (optional)
+            parent: The Synapse parent container (Project or Folder). Will be created if not set. (optional)
+            **kwargs:
+
+        Returns:
+            Folder
+        &#34;&#34;&#34;
+        if &#39;parent&#39; not in kwargs:
+            if parent:
+                kwargs[&#39;parent&#39;] = parent
+            else:
+                logging.warning(&#39;Synapse folder parent not specified. Parent will be created.&#39;)
+                kwargs[&#39;parent&#39;] = self.create_project(prefix=&#39;Parent_For_Folder_&#39;)
+
+        kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+
+        folder = self.client().store(Folder(**kwargs))
+        self.dispose_of(folder)
+        return folder
+
+    def create_file(self, name=None, path=None, parent=None, **kwargs):
+        &#34;&#34;&#34;Creates a new File and adds it to the trash queue.
+
+        Args:
+            name: Name of the file. (optional)
+            path: Path to the file. Will be created if not set. (optional)
+            parent: The Synapse parent container (Project or Folder). Will be created if not set. (optional)
+            **kwargs:
+
+        Returns:
+            File
+        &#34;&#34;&#34;
+        if &#39;parent&#39; not in kwargs:
+            if parent:
+                kwargs[&#39;parent&#39;] = parent
+            else:
+                logging.warning(&#39;Synapse file parent not specified. Parent will be created.&#39;)
+                kwargs[&#39;parent&#39;] = self.create_project(prefix=&#39;Parent_For_File_&#39;)
+
+        if name:
+            kwargs[&#39;name&#39;] = name
+
+        if &#39;path&#39; not in kwargs:
+            if path:
+                kwargs[&#39;path&#39;] = path
+            else:
+                logging.warning(&#39;Synapse file path not specified. Temporary file will be created.&#39;)
+                kwargs[&#39;path&#39;] = self.create_temp_file(name=name)
+
+        file = self.client().store(File(**kwargs))
+        self.dispose_of(file)
+        return file
+
+    def create_team(self, **kwargs):
+        &#34;&#34;&#34;Creates a new Team and adds it to the trash queue.&#34;&#34;&#34;
+        if &#39;name&#39; not in kwargs:
+            kwargs[&#39;name&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+
+        kwargs.pop(&#39;prefix&#39;, None)
+
+        team = self.client().store(Team(**kwargs))
+
+        self.wait_for_team_to_be_available(team)
+
+        self.dispose_of(team)
+        return team
+
+    def wait_for_team_to_be_available(self, team):
+        &#34;&#34;&#34;Waits for a newly created team to be available in Synapse.
+        There can be a delay from when a team is created and when syn.get() will return it.
+        &#34;&#34;&#34;
+        tries = 0
+        while True:
+            tries += 1
+            try:
+                self.client().getTeam(team.name)
+                break
+            except ValueError:
+                if tries &gt;= 10:
+                    raise Exception(&#39;Timed out waiting for Team to be available in Synapse.&#39;)
+                else:
+                    time.sleep(3)
+
+    def create_wiki(self, **kwargs):
+        &#34;&#34;&#34;Creates a new Wiki and adds it to the trash queue.&#34;&#34;&#34;
+        if &#39;title&#39; not in kwargs:
+            kwargs[&#39;title&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+        kwargs.pop(&#39;prefix&#39;, None)
+
+        if &#39;markdown&#39; not in kwargs:
+            kwargs[&#39;markdown&#39;] = &#39;My Wiki {0}&#39;.format(kwargs[&#39;title&#39;])
+
+        wiki = self.client().store(Wiki(**kwargs))
+        self.dispose_of(wiki)
+        return wiki
+
+    def create_temp_dir(self, name=None, suffix=None, prefix=None, dir=None):
+        &#34;&#34;&#34;Creates a temp directory that will be disposed.
+
+        Args:
+            name: (optional)
+            suffix: (optional)
+            prefix: (optional)
+            dir: (optional)
+
+        Returns:
+            Absolute path to the directory.
+        &#34;&#34;&#34;
+        if name:
+            if suffix:
+                name += suffix
+            if prefix:
+                name = prefix + name
+
+            dir = dir if dir else self.create_temp_dir()
+            temp_dir = os.path.join(dir, name)
+            os.mkdir(temp_dir)
+        else:
+            temp_dir = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
+
+        self.dispose_of(temp_dir)
+        return temp_dir
+
+    def create_temp_file(self, name=None, suffix=None, prefix=None, dir=None, content=None):
+        &#34;&#34;&#34;Creates a temp file that will be disposed.
+        If dir is not specified then a temp directory will be created and disposed too.
+
+        Args:
+            name: (optional)
+            suffix: (optional)
+            prefix: (optional)
+            dir: (optional)
+            content: (optional)
+
+        Returns:
+            Absolute path to the file.
+        &#34;&#34;&#34;
+        dir = dir if dir else self.create_temp_dir()
+        content = content if content else self.uniq_name()
+        if name:
+            if suffix:
+                name += suffix
+            if prefix:
+                name = prefix + name
+
+            tmp_filename = os.path.join(dir, name)
+            with open(tmp_filename, &#39;w&#39;) as tmp:
+                tmp.write(content)
+        else:
+            fd, tmp_filename = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
+            with os.fdopen(fd, &#39;w&#39;) as tmp:
+                tmp.write(content)
+
+        self.dispose_of(tmp_filename)
+        return tmp_filename</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper"><code class="flex name class">
+<span>class <span class="ident">SynapseTestHelper</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test helper for working with Synapse.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SynapseTestHelper:
+    &#34;&#34;&#34;Test helper for working with Synapse.&#34;&#34;&#34;
+
+    def __init__(self):
+        self._test_id = self._uniq_str()
+        self.trash = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.dispose()
+
+    _synapse_client = None
+
+    @classmethod
+    def configure(cls, synapse_client):
+        &#34;&#34;&#34;Sets the Synapse client to use for Synapse access.
+
+        Args:
+            synapse_client: A logged in instance of synapseclient.Synapse.
+
+        Returns:
+            True if successful otherwise raises an exception.
+        &#34;&#34;&#34;
+        cls.deconfigure()
+
+        if not isinstance(synapse_client, synapseclient.Synapse):
+            raise Exception(&#39;synapse_client must be an instance if synapseclient.Synapse.&#39;)
+
+        if synapse_client.credentials is None:
+            raise Exception(&#39;synapse_client must be logged in.&#39;)
+
+        cls._synapse_client = synapse_client
+
+        return cls.configured()
+
+    @classmethod
+    def deconfigure(cls):
+        &#34;&#34;&#34;Removes configuration.&#34;&#34;&#34;
+        cls._synapse_client = None
+        return not cls.configured()
+
+    @classmethod
+    def configured(cls):
+        &#34;&#34;&#34;Gets if configured.&#34;&#34;&#34;
+        return cls._synapse_client is not None
+
+    def client(self):
+        &#34;&#34;&#34;Gets the synapseclient.&#34;&#34;&#34;
+        return self._synapse_client
+
+    def _uniq_str(self):
+        &#34;&#34;&#34;Generates a unique Synapse friendly string.&#34;&#34;&#34;
+        return str(uuid.uuid4()).replace(&#39;-&#39;, &#39;_&#39;)
+
+    def test_id(self):
+        &#34;&#34;&#34;Gets a unique value to use as a test identifier.
+
+        This string can be used to help identify the test instance that created the object.
+        &#34;&#34;&#34;
+        return self._test_id
+
+    def uniq_name(self, prefix=None, postfix=None):
+        &#34;&#34;&#34;Get a unique string that is Synapse friendly with the test_id in it.
+
+        Args:
+            prefix: Optional prefix.
+            postfix: Optional postfix.
+
+        Returns:
+            String
+        &#34;&#34;&#34;
+        if prefix is None:
+            prefix = self._uniq_str()
+        if postfix is None:
+            postfix = self._uniq_str()
+        return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id(), uuid.uuid4().hex, postfix)
+
+    def fake_synapse_id(self):
+        &#34;&#34;&#34;Gets a Synapse entity ID that does not exist in Synapse.
+
+        Returns:
+            String
+        &#34;&#34;&#34;
+        return &#39;syn000&#39;
+
+    DISPOSABLE_TYPES = [
+        synapseclient.Project,
+        synapseclient.Folder,
+        synapseclient.File,
+        synapseclient.Team,
+        synapseclient.Wiki
+    ]
+
+    DISPOSABLE_SYNAPSE_TYPES = DISPOSABLE_TYPES
+
+    SKIP_SYNAPSE_TRASH_TYPES = [
+        synapseclient.Project,
+        synapseclient.Folder,
+        synapseclient.File,
+    ]
+
+    def is_diposable(self, obj):
+        &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
+        return type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj)
+
+    def _verify_is_disposable(self, obj):
+        &#34;&#34;&#34;Checks that an object can be disposed else raises an exception.&#34;&#34;&#34;
+        if not self.is_diposable(obj):
+            raise ValueError(&#39;Non-disposable type: {0}&#39;.format(type(obj)))
+
+    def dispose_of(self, *disposable_objects):
+        &#34;&#34;&#34;Adds a disposable object to the list of objects to be deleted.&#34;&#34;&#34;
+        for obj in disposable_objects:
+            self._verify_is_disposable(obj)
+            if obj not in self.trash:
+                self.trash.append(obj)
+
+    def dispose(self, *disposable_objects):
+        &#34;&#34;&#34;Deletes any disposable objects that were created during testing.
+        This method needs to be manually called after each or all tests are done, or use the context manager.
+
+        Args:
+            *disposable_objects: Objects to delete. Can be in the trash or not.
+
+        Returns:
+            None
+        &#34;&#34;&#34;
+        projects = []
+        paths = []
+        others = []
+
+        objects_to_dispose = disposable_objects if disposable_objects else self.trash
+
+        for obj in objects_to_dispose:
+            self._verify_is_disposable(obj)
+            if isinstance(obj, Project):
+                projects.append(obj)
+            elif self._is_path(obj):
+                paths.append(obj)
+            else:
+                others.append(obj)
+
+        # Sort the temp files and folders so each file is removed first then the empty directory.
+        # If the directory is not empty then this process should not be the one to delete it. This is for safety!
+        paths.sort(reverse=True)
+
+        # Projects need to be deleted first.
+        for obj in projects + others + paths:
+            try:
+                if type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
+                    self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
+                elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
+                    self.client().delete(obj)
+                elif self._is_path(obj):
+                    if os.path.isdir(obj):
+                        os.rmdir(obj)
+                    elif os.path.isfile(obj):
+                        os.remove(obj)
+            except:
+                pass
+
+            if obj in self.trash:
+                self.trash.remove(obj)
+
+    def _is_path(self, obj):
+        &#34;&#34;&#34;Gets if the object is a Path like object.&#34;&#34;&#34;
+        try:
+            return PurePath(obj).is_absolute()
+        except:
+            return False
+
+    def create_project(self, name=None, prefix=None, **kwargs):
+        &#34;&#34;&#34;Creates a new Project and adds it to the trash queue.
+
+        Args:
+            name: Name of the project. A unique name will be generated if not set. (optional)
+            prefix: Prefix to add to the generated project name if the name arg is None. (optional)
+            **kwargs:
+
+        Returns:
+            Project
+        &#34;&#34;&#34;
+        kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+        project = self.client().store(Project(**kwargs))
+        self.dispose_of(project)
+        return project
+
+    def create_folder(self, name=None, prefix=None, parent=None, **kwargs):
+        &#34;&#34;&#34;Creates a new Folder and adds it to the trash queue.
+
+        Args:
+            name: Name of the folder. A unique name will be generated if not set. (optional)
+            prefix: Prefix to add to the generated folder name if the name arg is None. (optional)
+            parent: The Synapse parent container (Project or Folder). Will be created if not set. (optional)
+            **kwargs:
+
+        Returns:
+            Folder
+        &#34;&#34;&#34;
+        if &#39;parent&#39; not in kwargs:
+            if parent:
+                kwargs[&#39;parent&#39;] = parent
+            else:
+                logging.warning(&#39;Synapse folder parent not specified. Parent will be created.&#39;)
+                kwargs[&#39;parent&#39;] = self.create_project(prefix=&#39;Parent_For_Folder_&#39;)
+
+        kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+
+        folder = self.client().store(Folder(**kwargs))
+        self.dispose_of(folder)
+        return folder
+
+    def create_file(self, name=None, path=None, parent=None, **kwargs):
+        &#34;&#34;&#34;Creates a new File and adds it to the trash queue.
+
+        Args:
+            name: Name of the file. (optional)
+            path: Path to the file. Will be created if not set. (optional)
+            parent: The Synapse parent container (Project or Folder). Will be created if not set. (optional)
+            **kwargs:
+
+        Returns:
+            File
+        &#34;&#34;&#34;
+        if &#39;parent&#39; not in kwargs:
+            if parent:
+                kwargs[&#39;parent&#39;] = parent
+            else:
+                logging.warning(&#39;Synapse file parent not specified. Parent will be created.&#39;)
+                kwargs[&#39;parent&#39;] = self.create_project(prefix=&#39;Parent_For_File_&#39;)
+
+        if name:
+            kwargs[&#39;name&#39;] = name
+
+        if &#39;path&#39; not in kwargs:
+            if path:
+                kwargs[&#39;path&#39;] = path
+            else:
+                logging.warning(&#39;Synapse file path not specified. Temporary file will be created.&#39;)
+                kwargs[&#39;path&#39;] = self.create_temp_file(name=name)
+
+        file = self.client().store(File(**kwargs))
+        self.dispose_of(file)
+        return file
+
+    def create_team(self, **kwargs):
+        &#34;&#34;&#34;Creates a new Team and adds it to the trash queue.&#34;&#34;&#34;
+        if &#39;name&#39; not in kwargs:
+            kwargs[&#39;name&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+
+        kwargs.pop(&#39;prefix&#39;, None)
+
+        team = self.client().store(Team(**kwargs))
+
+        self.wait_for_team_to_be_available(team)
+
+        self.dispose_of(team)
+        return team
+
+    def wait_for_team_to_be_available(self, team):
+        &#34;&#34;&#34;Waits for a newly created team to be available in Synapse.
+        There can be a delay from when a team is created and when syn.get() will return it.
+        &#34;&#34;&#34;
+        tries = 0
+        while True:
+            tries += 1
+            try:
+                self.client().getTeam(team.name)
+                break
+            except ValueError:
+                if tries &gt;= 10:
+                    raise Exception(&#39;Timed out waiting for Team to be available in Synapse.&#39;)
+                else:
+                    time.sleep(3)
+
+    def create_wiki(self, **kwargs):
+        &#34;&#34;&#34;Creates a new Wiki and adds it to the trash queue.&#34;&#34;&#34;
+        if &#39;title&#39; not in kwargs:
+            kwargs[&#39;title&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+        kwargs.pop(&#39;prefix&#39;, None)
+
+        if &#39;markdown&#39; not in kwargs:
+            kwargs[&#39;markdown&#39;] = &#39;My Wiki {0}&#39;.format(kwargs[&#39;title&#39;])
+
+        wiki = self.client().store(Wiki(**kwargs))
+        self.dispose_of(wiki)
+        return wiki
+
+    def create_temp_dir(self, name=None, suffix=None, prefix=None, dir=None):
+        &#34;&#34;&#34;Creates a temp directory that will be disposed.
+
+        Args:
+            name: (optional)
+            suffix: (optional)
+            prefix: (optional)
+            dir: (optional)
+
+        Returns:
+            Absolute path to the directory.
+        &#34;&#34;&#34;
+        if name:
+            if suffix:
+                name += suffix
+            if prefix:
+                name = prefix + name
+
+            dir = dir if dir else self.create_temp_dir()
+            temp_dir = os.path.join(dir, name)
+            os.mkdir(temp_dir)
+        else:
+            temp_dir = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
+
+        self.dispose_of(temp_dir)
+        return temp_dir
+
+    def create_temp_file(self, name=None, suffix=None, prefix=None, dir=None, content=None):
+        &#34;&#34;&#34;Creates a temp file that will be disposed.
+        If dir is not specified then a temp directory will be created and disposed too.
+
+        Args:
+            name: (optional)
+            suffix: (optional)
+            prefix: (optional)
+            dir: (optional)
+            content: (optional)
+
+        Returns:
+            Absolute path to the file.
+        &#34;&#34;&#34;
+        dir = dir if dir else self.create_temp_dir()
+        content = content if content else self.uniq_name()
+        if name:
+            if suffix:
+                name += suffix
+            if prefix:
+                name = prefix + name
+
+            tmp_filename = os.path.join(dir, name)
+            with open(tmp_filename, &#39;w&#39;) as tmp:
+                tmp.write(content)
+        else:
+            fd, tmp_filename = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
+            with os.fdopen(fd, &#39;w&#39;) as tmp:
+                tmp.write(content)
+
+        self.dispose_of(tmp_filename)
+        return tmp_filename</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.DISPOSABLE_SYNAPSE_TYPES"><code class="name">var <span class="ident">DISPOSABLE_SYNAPSE_TYPES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.DISPOSABLE_TYPES"><code class="name">var <span class="ident">DISPOSABLE_TYPES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.SKIP_SYNAPSE_TRASH_TYPES"><code class="name">var <span class="ident">SKIP_SYNAPSE_TRASH_TYPES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.configure"><code class="name flex">
+<span>def <span class="ident">configure</span></span>(<span>synapse_client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sets the Synapse client to use for Synapse access.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>synapse_client</code></strong></dt>
+<dd>A logged in instance of synapseclient.Synapse.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>True if successful otherwise raises an exception.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def configure(cls, synapse_client):
+    &#34;&#34;&#34;Sets the Synapse client to use for Synapse access.
+
+    Args:
+        synapse_client: A logged in instance of synapseclient.Synapse.
+
+    Returns:
+        True if successful otherwise raises an exception.
+    &#34;&#34;&#34;
+    cls.deconfigure()
+
+    if not isinstance(synapse_client, synapseclient.Synapse):
+        raise Exception(&#39;synapse_client must be an instance if synapseclient.Synapse.&#39;)
+
+    if synapse_client.credentials is None:
+        raise Exception(&#39;synapse_client must be logged in.&#39;)
+
+    cls._synapse_client = synapse_client
+
+    return cls.configured()</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.configured"><code class="name flex">
+<span>def <span class="ident">configured</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets if configured.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def configured(cls):
+    &#34;&#34;&#34;Gets if configured.&#34;&#34;&#34;
+    return cls._synapse_client is not None</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.deconfigure"><code class="name flex">
+<span>def <span class="ident">deconfigure</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Removes configuration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def deconfigure(cls):
+    &#34;&#34;&#34;Removes configuration.&#34;&#34;&#34;
+    cls._synapse_client = None
+    return not cls.configured()</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.client"><code class="name flex">
+<span>def <span class="ident">client</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets the synapseclient.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def client(self):
+    &#34;&#34;&#34;Gets the synapseclient.&#34;&#34;&#34;
+    return self._synapse_client</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_file"><code class="name flex">
+<span>def <span class="ident">create_file</span></span>(<span>self, name=None, path=None, parent=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a new File and adds it to the trash queue.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>Name of the file. (optional)</dd>
+<dt><strong><code>path</code></strong></dt>
+<dd>Path to the file. Will be created if not set. (optional)</dd>
+<dt><strong><code>parent</code></strong></dt>
+<dd>The Synapse parent container (Project or Folder). Will be created if not set. (optional)</dd>
+</dl>
+<p>**kwargs:</p>
+<h2 id="returns">Returns</h2>
+<p>File</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_file(self, name=None, path=None, parent=None, **kwargs):
+    &#34;&#34;&#34;Creates a new File and adds it to the trash queue.
+
+    Args:
+        name: Name of the file. (optional)
+        path: Path to the file. Will be created if not set. (optional)
+        parent: The Synapse parent container (Project or Folder). Will be created if not set. (optional)
+        **kwargs:
+
+    Returns:
+        File
+    &#34;&#34;&#34;
+    if &#39;parent&#39; not in kwargs:
+        if parent:
+            kwargs[&#39;parent&#39;] = parent
+        else:
+            logging.warning(&#39;Synapse file parent not specified. Parent will be created.&#39;)
+            kwargs[&#39;parent&#39;] = self.create_project(prefix=&#39;Parent_For_File_&#39;)
+
+    if name:
+        kwargs[&#39;name&#39;] = name
+
+    if &#39;path&#39; not in kwargs:
+        if path:
+            kwargs[&#39;path&#39;] = path
+        else:
+            logging.warning(&#39;Synapse file path not specified. Temporary file will be created.&#39;)
+            kwargs[&#39;path&#39;] = self.create_temp_file(name=name)
+
+    file = self.client().store(File(**kwargs))
+    self.dispose_of(file)
+    return file</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_folder"><code class="name flex">
+<span>def <span class="ident">create_folder</span></span>(<span>self, name=None, prefix=None, parent=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a new Folder and adds it to the trash queue.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>Name of the folder. A unique name will be generated if not set. (optional)</dd>
+<dt><strong><code>prefix</code></strong></dt>
+<dd>Prefix to add to the generated folder name if the name arg is None. (optional)</dd>
+<dt><strong><code>parent</code></strong></dt>
+<dd>The Synapse parent container (Project or Folder). Will be created if not set. (optional)</dd>
+</dl>
+<p>**kwargs:</p>
+<h2 id="returns">Returns</h2>
+<p>Folder</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_folder(self, name=None, prefix=None, parent=None, **kwargs):
+    &#34;&#34;&#34;Creates a new Folder and adds it to the trash queue.
+
+    Args:
+        name: Name of the folder. A unique name will be generated if not set. (optional)
+        prefix: Prefix to add to the generated folder name if the name arg is None. (optional)
+        parent: The Synapse parent container (Project or Folder). Will be created if not set. (optional)
+        **kwargs:
+
+    Returns:
+        Folder
+    &#34;&#34;&#34;
+    if &#39;parent&#39; not in kwargs:
+        if parent:
+            kwargs[&#39;parent&#39;] = parent
+        else:
+            logging.warning(&#39;Synapse folder parent not specified. Parent will be created.&#39;)
+            kwargs[&#39;parent&#39;] = self.create_project(prefix=&#39;Parent_For_Folder_&#39;)
+
+    kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+
+    folder = self.client().store(Folder(**kwargs))
+    self.dispose_of(folder)
+    return folder</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_project"><code class="name flex">
+<span>def <span class="ident">create_project</span></span>(<span>self, name=None, prefix=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a new Project and adds it to the trash queue.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>Name of the project. A unique name will be generated if not set. (optional)</dd>
+<dt><strong><code>prefix</code></strong></dt>
+<dd>Prefix to add to the generated project name if the name arg is None. (optional)</dd>
+</dl>
+<p>**kwargs:</p>
+<h2 id="returns">Returns</h2>
+<p>Project</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_project(self, name=None, prefix=None, **kwargs):
+    &#34;&#34;&#34;Creates a new Project and adds it to the trash queue.
+
+    Args:
+        name: Name of the project. A unique name will be generated if not set. (optional)
+        prefix: Prefix to add to the generated project name if the name arg is None. (optional)
+        **kwargs:
+
+    Returns:
+        Project
+    &#34;&#34;&#34;
+    kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+    project = self.client().store(Project(**kwargs))
+    self.dispose_of(project)
+    return project</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_team"><code class="name flex">
+<span>def <span class="ident">create_team</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a new Team and adds it to the trash queue.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_team(self, **kwargs):
+    &#34;&#34;&#34;Creates a new Team and adds it to the trash queue.&#34;&#34;&#34;
+    if &#39;name&#39; not in kwargs:
+        kwargs[&#39;name&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+
+    kwargs.pop(&#39;prefix&#39;, None)
+
+    team = self.client().store(Team(**kwargs))
+
+    self.wait_for_team_to_be_available(team)
+
+    self.dispose_of(team)
+    return team</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_temp_dir"><code class="name flex">
+<span>def <span class="ident">create_temp_dir</span></span>(<span>self, name=None, suffix=None, prefix=None, dir=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a temp directory that will be disposed.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>(optional)</dd>
+<dt><strong><code>suffix</code></strong></dt>
+<dd>(optional)</dd>
+<dt><strong><code>prefix</code></strong></dt>
+<dd>(optional)</dd>
+<dt><strong><code>dir</code></strong></dt>
+<dd>(optional)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Absolute path to the directory.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_temp_dir(self, name=None, suffix=None, prefix=None, dir=None):
+    &#34;&#34;&#34;Creates a temp directory that will be disposed.
+
+    Args:
+        name: (optional)
+        suffix: (optional)
+        prefix: (optional)
+        dir: (optional)
+
+    Returns:
+        Absolute path to the directory.
+    &#34;&#34;&#34;
+    if name:
+        if suffix:
+            name += suffix
+        if prefix:
+            name = prefix + name
+
+        dir = dir if dir else self.create_temp_dir()
+        temp_dir = os.path.join(dir, name)
+        os.mkdir(temp_dir)
+    else:
+        temp_dir = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
+
+    self.dispose_of(temp_dir)
+    return temp_dir</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_temp_file"><code class="name flex">
+<span>def <span class="ident">create_temp_file</span></span>(<span>self, name=None, suffix=None, prefix=None, dir=None, content=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a temp file that will be disposed.
+If dir is not specified then a temp directory will be created and disposed too.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>(optional)</dd>
+<dt><strong><code>suffix</code></strong></dt>
+<dd>(optional)</dd>
+<dt><strong><code>prefix</code></strong></dt>
+<dd>(optional)</dd>
+<dt><strong><code>dir</code></strong></dt>
+<dd>(optional)</dd>
+<dt><strong><code>content</code></strong></dt>
+<dd>(optional)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Absolute path to the file.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_temp_file(self, name=None, suffix=None, prefix=None, dir=None, content=None):
+    &#34;&#34;&#34;Creates a temp file that will be disposed.
+    If dir is not specified then a temp directory will be created and disposed too.
+
+    Args:
+        name: (optional)
+        suffix: (optional)
+        prefix: (optional)
+        dir: (optional)
+        content: (optional)
+
+    Returns:
+        Absolute path to the file.
+    &#34;&#34;&#34;
+    dir = dir if dir else self.create_temp_dir()
+    content = content if content else self.uniq_name()
+    if name:
+        if suffix:
+            name += suffix
+        if prefix:
+            name = prefix + name
+
+        tmp_filename = os.path.join(dir, name)
+        with open(tmp_filename, &#39;w&#39;) as tmp:
+            tmp.write(content)
+    else:
+        fd, tmp_filename = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
+        with os.fdopen(fd, &#39;w&#39;) as tmp:
+            tmp.write(content)
+
+    self.dispose_of(tmp_filename)
+    return tmp_filename</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_wiki"><code class="name flex">
+<span>def <span class="ident">create_wiki</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a new Wiki and adds it to the trash queue.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_wiki(self, **kwargs):
+    &#34;&#34;&#34;Creates a new Wiki and adds it to the trash queue.&#34;&#34;&#34;
+    if &#39;title&#39; not in kwargs:
+        kwargs[&#39;title&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+    kwargs.pop(&#39;prefix&#39;, None)
+
+    if &#39;markdown&#39; not in kwargs:
+        kwargs[&#39;markdown&#39;] = &#39;My Wiki {0}&#39;.format(kwargs[&#39;title&#39;])
+
+    wiki = self.client().store(Wiki(**kwargs))
+    self.dispose_of(wiki)
+    return wiki</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.dispose"><code class="name flex">
+<span>def <span class="ident">dispose</span></span>(<span>self, *disposable_objects)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deletes any disposable objects that were created during testing.
+This method needs to be manually called after each or all tests are done, or use the context manager.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>*disposable_objects</code></strong></dt>
+<dd>Objects to delete. Can be in the trash or not.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dispose(self, *disposable_objects):
+    &#34;&#34;&#34;Deletes any disposable objects that were created during testing.
+    This method needs to be manually called after each or all tests are done, or use the context manager.
+
+    Args:
+        *disposable_objects: Objects to delete. Can be in the trash or not.
+
+    Returns:
+        None
+    &#34;&#34;&#34;
+    projects = []
+    paths = []
+    others = []
+
+    objects_to_dispose = disposable_objects if disposable_objects else self.trash
+
+    for obj in objects_to_dispose:
+        self._verify_is_disposable(obj)
+        if isinstance(obj, Project):
+            projects.append(obj)
+        elif self._is_path(obj):
+            paths.append(obj)
+        else:
+            others.append(obj)
+
+    # Sort the temp files and folders so each file is removed first then the empty directory.
+    # If the directory is not empty then this process should not be the one to delete it. This is for safety!
+    paths.sort(reverse=True)
+
+    # Projects need to be deleted first.
+    for obj in projects + others + paths:
+        try:
+            if type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
+                self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
+            elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
+                self.client().delete(obj)
+            elif self._is_path(obj):
+                if os.path.isdir(obj):
+                    os.rmdir(obj)
+                elif os.path.isfile(obj):
+                    os.remove(obj)
+        except:
+            pass
+
+        if obj in self.trash:
+            self.trash.remove(obj)</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.dispose_of"><code class="name flex">
+<span>def <span class="ident">dispose_of</span></span>(<span>self, *disposable_objects)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Adds a disposable object to the list of objects to be deleted.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dispose_of(self, *disposable_objects):
+    &#34;&#34;&#34;Adds a disposable object to the list of objects to be deleted.&#34;&#34;&#34;
+    for obj in disposable_objects:
+        self._verify_is_disposable(obj)
+        if obj not in self.trash:
+            self.trash.append(obj)</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.fake_synapse_id"><code class="name flex">
+<span>def <span class="ident">fake_synapse_id</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets a Synapse entity ID that does not exist in Synapse.</p>
+<h2 id="returns">Returns</h2>
+<p>String</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fake_synapse_id(self):
+    &#34;&#34;&#34;Gets a Synapse entity ID that does not exist in Synapse.
+
+    Returns:
+        String
+    &#34;&#34;&#34;
+    return &#39;syn000&#39;</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.is_diposable"><code class="name flex">
+<span>def <span class="ident">is_diposable</span></span>(<span>self, obj)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets if an object is disposable by SynapseTestHelper.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_diposable(self, obj):
+    &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
+    return type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj)</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.test_id"><code class="name flex">
+<span>def <span class="ident">test_id</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets a unique value to use as a test identifier.</p>
+<p>This string can be used to help identify the test instance that created the object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_id(self):
+    &#34;&#34;&#34;Gets a unique value to use as a test identifier.
+
+    This string can be used to help identify the test instance that created the object.
+    &#34;&#34;&#34;
+    return self._test_id</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.uniq_name"><code class="name flex">
+<span>def <span class="ident">uniq_name</span></span>(<span>self, prefix=None, postfix=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get a unique string that is Synapse friendly with the test_id in it.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>prefix</code></strong></dt>
+<dd>Optional prefix.</dd>
+<dt><strong><code>postfix</code></strong></dt>
+<dd>Optional postfix.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>String</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def uniq_name(self, prefix=None, postfix=None):
+    &#34;&#34;&#34;Get a unique string that is Synapse friendly with the test_id in it.
+
+    Args:
+        prefix: Optional prefix.
+        postfix: Optional postfix.
+
+    Returns:
+        String
+    &#34;&#34;&#34;
+    if prefix is None:
+        prefix = self._uniq_str()
+    if postfix is None:
+        postfix = self._uniq_str()
+    return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id(), uuid.uuid4().hex, postfix)</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.wait_for_team_to_be_available"><code class="name flex">
+<span>def <span class="ident">wait_for_team_to_be_available</span></span>(<span>self, team)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Waits for a newly created team to be available in Synapse.
+There can be a delay from when a team is created and when syn.get() will return it.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wait_for_team_to_be_available(self, team):
+    &#34;&#34;&#34;Waits for a newly created team to be available in Synapse.
+    There can be a delay from when a team is created and when syn.get() will return it.
+    &#34;&#34;&#34;
+    tries = 0
+    while True:
+        tries += 1
+        try:
+            self.client().getTeam(team.name)
+            break
+        except ValueError:
+            if tries &gt;= 10:
+                raise Exception(&#39;Timed out waiting for Team to be available in Synapse.&#39;)
+            else:
+                time.sleep(3)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="synapse_test_helper" href="index.html">synapse_test_helper</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper">SynapseTestHelper</a></code></h4>
+<ul class="">
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.DISPOSABLE_SYNAPSE_TYPES" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.DISPOSABLE_SYNAPSE_TYPES">DISPOSABLE_SYNAPSE_TYPES</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.DISPOSABLE_TYPES" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.DISPOSABLE_TYPES">DISPOSABLE_TYPES</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.SKIP_SYNAPSE_TRASH_TYPES" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.SKIP_SYNAPSE_TRASH_TYPES">SKIP_SYNAPSE_TRASH_TYPES</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.client" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.client">client</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.configure" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.configure">configure</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.configured" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.configured">configured</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_file" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_file">create_file</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_folder" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_folder">create_folder</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_project" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_project">create_project</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_team" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_team">create_team</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_temp_dir" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_temp_dir">create_temp_dir</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_temp_file" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_temp_file">create_temp_file</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_wiki" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_wiki">create_wiki</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.deconfigure" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.deconfigure">deconfigure</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.dispose" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.dispose">dispose</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.dispose_of" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.dispose_of">dispose_of</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.fake_synapse_id" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.fake_synapse_id">fake_synapse_id</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.is_diposable" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.is_diposable">is_diposable</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.test_id" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.test_id">test_id</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.uniq_name" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.uniq_name">uniq_name</a></code></li>
+<li><code><a title="synapse_test_helper.synapse_test_helper.SynapseTestHelper.wait_for_team_to_be_available" href="#synapse_test_helper.synapse_test_helper.SynapseTestHelper.wait_for_team_to_be_available">wait_for_team_to_be_available</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

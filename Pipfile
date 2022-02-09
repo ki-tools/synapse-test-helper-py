@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+coverage = "*"
+coveralls = "*"
+twine = "*"
+pytest-mock = "*"
+pdoc3 = "*"
+python-dotenv = "*"
+tox = "*"
+
+[packages]
+synapseclient = ">=2.1.0,<3.0.0"
+
+[requires]
+python_version = "3.7"
