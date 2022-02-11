@@ -435,6 +435,17 @@ def test_create_temp_dir(synapse_test_helper, mk_tempdir):
         assert os.path.exists(os.path.dirname(path))
     paths.clear()
 
+    # Creates any missing parent directories
+    new_path = os.path.join(dir, 'one', 'two')
+    assert os.path.exists(new_path) is False
+    path = synapse_test_helper.create_temp_dir(dir=new_path)
+    assert os.path.isdir(os.path.dirname(path))
+
+    new_path = os.path.join(dir, 'three', 'four')
+    assert os.path.exists(new_path) is False
+    path = synapse_test_helper.create_temp_dir(name='folder', dir=new_path)
+    assert os.path.isdir(os.path.dirname(path))
+
 
 def test_create_temp_file(synapse_test_helper, mk_tempdir):
     dir = mk_tempdir()
@@ -510,3 +521,14 @@ def test_create_temp_file(synapse_test_helper, mk_tempdir):
     path = synapse_test_helper.create_temp_file(content=contents)
     with open(path) as f:
         assert f.read() == contents
+
+    # Creates any missing parent directories
+    new_path = os.path.join(dir, 'one', 'two')
+    assert os.path.exists(new_path) is False
+    path = synapse_test_helper.create_temp_file(dir=new_path)
+    assert os.path.isdir(os.path.dirname(path))
+
+    new_path = os.path.join(dir, 'three', 'four')
+    assert os.path.exists(new_path) is False
+    path = synapse_test_helper.create_temp_file(name='test.txt', dir=new_path)
+    assert os.path.isdir(os.path.dirname(path))

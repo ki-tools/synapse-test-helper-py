@@ -318,8 +318,10 @@ class SynapseTestHelper:
 
             dir = dir if dir else self.create_temp_dir()
             temp_dir = os.path.join(dir, name)
-            os.mkdir(temp_dir)
+            os.makedirs(temp_dir, exist_ok=True)
         else:
+            if dir:
+                os.makedirs(dir, exist_ok=True)
             temp_dir = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
 
         self.dispose_of(temp_dir)
@@ -341,6 +343,7 @@ class SynapseTestHelper:
         """
         dir = dir if dir else self.create_temp_dir()
         content = content if content else self.uniq_name()
+        os.makedirs(dir, exist_ok=True)
         if name:
             if suffix:
                 name += suffix
