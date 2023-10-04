@@ -13,12 +13,9 @@ load_dotenv()
 @pytest.fixture(scope='session')
 def syn_test_credentials():
     def _get():
-        result = [
-            os.environ.get('TEST_SYNAPSE_USERNAME'),
-            os.environ.get('TEST_SYNAPSE_PASSWORD')
-        ]
-        if None in result:
-            raise Exception('Environment variables not set: TEST_SYNAPSE_USERNAME or TEST_SYNAPSE_PASSWORD')
+        result = os.environ.get('TEST_SYNAPSE_AUTH_TOKEN', None)
+        if result is None:
+            raise Exception('Environment variable not set: result TEST_SYNAPSE_AUTH_TOKEN')
         return result
 
     yield _get
@@ -26,12 +23,10 @@ def syn_test_credentials():
 
 @pytest.fixture(scope='session', autouse=True)
 def syn_client(syn_test_credentials):
-    syn_user, syn_pass = syn_test_credentials()
+    syn_auth_token = syn_test_credentials()
     synapse_client = synapseclient.Synapse(skip_checks=True, configPath='')
-    synapse_client.login(email=syn_user, password=syn_pass, silent=True, rememberMe=False, forced=True)
-
+    synapse_client.login(authToken=syn_auth_token, silent=True, rememberMe=False, forced=True)
     assert SynapseTestHelper.configure(synapse_client)
-
     return synapse_client
 
 

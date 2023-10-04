@@ -1,5 +1,12 @@
 # Change Log
 
+## Version 0.0.3 (2023-10-04)
+
+### Changes
+
+- Python 3.8 - 3.11 support.
+- Added None and filehandles as disposable objects.
+
 ## Version 0.0.2 (2022-02-11)
 
 ### Changes

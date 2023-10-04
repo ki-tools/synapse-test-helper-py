@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "synapse-test-helper"
+version = "0.0.3"
+description = "Utilities for integration tests against Synapse."
+keywords = ["Synapse"]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "synapseclient>=2.3.1,<3.0.0"
+]
+
+[project.urls]
+"repository" = "https://github.com/ki-tools/synapse-test-helper-py"
+
+[tool.hatch.build]
+only-packages = true
+sources = ["src"]
+artifacts = [
+    "CHANGELOG.md"
+]
+exclude = [
+    "tests"
+]

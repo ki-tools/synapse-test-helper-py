@@ -93,7 +93,7 @@ class SynapseTestHelper:
         Returns:
             String
         """
-        return 'syn000'
+        return 'syn0'
 
     DISPOSABLE_TYPES = [
         synapseclient.Project,
@@ -113,7 +113,7 @@ class SynapseTestHelper:
 
     def is_diposable(self, obj):
         """Gets if an object is disposable by SynapseTestHelper."""
-        return type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj)
+        return obj is None or (type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj) or self._is_filehandle(obj))
 
     def _verify_is_disposable(self, obj):
         """Checks that an object can be disposed else raises an exception."""
@@ -159,7 +159,9 @@ class SynapseTestHelper:
         # Projects need to be deleted first.
         for obj in projects + others + paths:
             try:
-                if type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
+                if obj is None:
+                    pass
+                elif type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
                     self.client().restDELETE(uri='/entity/{0}?skipTrashCan=true'.format(obj.get('id')))
                 elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
                     self.client().delete(obj)
@@ -168,6 +170,9 @@ class SynapseTestHelper:
                         os.rmdir(obj)
                     elif os.path.isfile(obj):
                         os.remove(obj)
+                elif self._is_filehandle(obj):
+                    self.client().restDELETE(uri='/fileHandle/{0}'.format(obj.get('id')),
+                                             endpoint=self.client().fileHandleEndpoint)
             except:
                 pass
 
@@ -177,9 +182,29 @@ class SynapseTestHelper:
     def _is_path(self, obj):
         """Gets if the object is a Path like object."""
         try:
-            return PurePath(obj).is_absolute()
+            return obj is not None and PurePath(obj).is_absolute()
         except:
             return False
+
+    __FILE_HANDLE__ATTRS__ = ['id',
+                              'etag',
+                              'createdBy',
+                              'createdOn',
+                              'modifiedOn',
+                              'concreteType',
+                              'contentType',
+                              'contentMd5',
+                              'fileName',
+                              'storageLocationId',
+                              'contentSize',
+                              'status']
+
+    def _is_filehandle(self, obj):
+        """
+        Gets if the object is a filehandle.
+        https://rest-docs.synapse.org/rest/org/sagebionetworks/repo/model/file/FileHandle.html
+        """
+        return obj is not None and isinstance(obj, dict) and all(attr in obj for attr in self.__FILE_HANDLE__ATTRS__)
 
     def create_project(self, name=None, prefix=None, **kwargs):
         """Creates a new Project and adds it to the trash queue.

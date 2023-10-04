@@ -121,7 +121,7 @@ class SynapseTestHelper:
         Returns:
             String
         &#34;&#34;&#34;
-        return &#39;syn000&#39;
+        return &#39;syn0&#39;
 
     DISPOSABLE_TYPES = [
         synapseclient.Project,
@@ -141,7 +141,7 @@ class SynapseTestHelper:
 
     def is_diposable(self, obj):
         &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
-        return type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj)
+        return obj is None or (type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj) or self._is_filehandle(obj))
 
     def _verify_is_disposable(self, obj):
         &#34;&#34;&#34;Checks that an object can be disposed else raises an exception.&#34;&#34;&#34;
@@ -187,7 +187,9 @@ class SynapseTestHelper:
         # Projects need to be deleted first.
         for obj in projects + others + paths:
             try:
-                if type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
+                if obj is None:
+                    pass
+                elif type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
                     self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
                 elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
                     self.client().delete(obj)
@@ -196,6 +198,9 @@ class SynapseTestHelper:
                         os.rmdir(obj)
                     elif os.path.isfile(obj):
                         os.remove(obj)
+                elif self._is_filehandle(obj):
+                    self.client().restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
+                                             endpoint=self.client().fileHandleEndpoint)
             except:
                 pass
 
@@ -205,9 +210,29 @@ class SynapseTestHelper:
     def _is_path(self, obj):
         &#34;&#34;&#34;Gets if the object is a Path like object.&#34;&#34;&#34;
         try:
-            return PurePath(obj).is_absolute()
+            return obj is not None and PurePath(obj).is_absolute()
         except:
             return False
+
+    __FILE_HANDLE__ATTRS__ = [&#39;id&#39;,
+                              &#39;etag&#39;,
+                              &#39;createdBy&#39;,
+                              &#39;createdOn&#39;,
+                              &#39;modifiedOn&#39;,
+                              &#39;concreteType&#39;,
+                              &#39;contentType&#39;,
+                              &#39;contentMd5&#39;,
+                              &#39;fileName&#39;,
+                              &#39;storageLocationId&#39;,
+                              &#39;contentSize&#39;,
+                              &#39;status&#39;]
+
+    def _is_filehandle(self, obj):
+        &#34;&#34;&#34;
+        Gets if the object is a filehandle.
+        https://rest-docs.synapse.org/rest/org/sagebionetworks/repo/model/file/FileHandle.html
+        &#34;&#34;&#34;
+        return obj is not None and isinstance(obj, dict) and all(attr in obj for attr in self.__FILE_HANDLE__ATTRS__)
 
     def create_project(self, name=None, prefix=None, **kwargs):
         &#34;&#34;&#34;Creates a new Project and adds it to the trash queue.
@@ -493,7 +518,7 @@ class SynapseTestHelper:
         Returns:
             String
         &#34;&#34;&#34;
-        return &#39;syn000&#39;
+        return &#39;syn0&#39;
 
     DISPOSABLE_TYPES = [
         synapseclient.Project,
@@ -513,7 +538,7 @@ class SynapseTestHelper:
 
     def is_diposable(self, obj):
         &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
-        return type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj)
+        return obj is None or (type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj) or self._is_filehandle(obj))
 
     def _verify_is_disposable(self, obj):
         &#34;&#34;&#34;Checks that an object can be disposed else raises an exception.&#34;&#34;&#34;
@@ -559,7 +584,9 @@ class SynapseTestHelper:
         # Projects need to be deleted first.
         for obj in projects + others + paths:
             try:
-                if type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
+                if obj is None:
+                    pass
+                elif type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
                     self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
                 elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
                     self.client().delete(obj)
@@ -568,6 +595,9 @@ class SynapseTestHelper:
                         os.rmdir(obj)
                     elif os.path.isfile(obj):
                         os.remove(obj)
+                elif self._is_filehandle(obj):
+                    self.client().restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
+                                             endpoint=self.client().fileHandleEndpoint)
             except:
                 pass
 
@@ -577,9 +607,29 @@ class SynapseTestHelper:
     def _is_path(self, obj):
         &#34;&#34;&#34;Gets if the object is a Path like object.&#34;&#34;&#34;
         try:
-            return PurePath(obj).is_absolute()
+            return obj is not None and PurePath(obj).is_absolute()
         except:
             return False
+
+    __FILE_HANDLE__ATTRS__ = [&#39;id&#39;,
+                              &#39;etag&#39;,
+                              &#39;createdBy&#39;,
+                              &#39;createdOn&#39;,
+                              &#39;modifiedOn&#39;,
+                              &#39;concreteType&#39;,
+                              &#39;contentType&#39;,
+                              &#39;contentMd5&#39;,
+                              &#39;fileName&#39;,
+                              &#39;storageLocationId&#39;,
+                              &#39;contentSize&#39;,
+                              &#39;status&#39;]
+
+    def _is_filehandle(self, obj):
+        &#34;&#34;&#34;
+        Gets if the object is a filehandle.
+        https://rest-docs.synapse.org/rest/org/sagebionetworks/repo/model/file/FileHandle.html
+        &#34;&#34;&#34;
+        return obj is not None and isinstance(obj, dict) and all(attr in obj for attr in self.__FILE_HANDLE__ATTRS__)
 
     def create_project(self, name=None, prefix=None, **kwargs):
         &#34;&#34;&#34;Creates a new Project and adds it to the trash queue.
@@ -1211,7 +1261,9 @@ This method needs to be manually called after each or all tests are done, or use
     # Projects need to be deleted first.
     for obj in projects + others + paths:
         try:
-            if type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
+            if obj is None:
+                pass
+            elif type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
                 self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
             elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
                 self.client().delete(obj)
@@ -1220,6 +1272,9 @@ This method needs to be manually called after each or all tests are done, or use
                     os.rmdir(obj)
                 elif os.path.isfile(obj):
                     os.remove(obj)
+            elif self._is_filehandle(obj):
+                self.client().restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
+                                         endpoint=self.client().fileHandleEndpoint)
         except:
             pass
 
@@ -1261,7 +1316,7 @@ This method needs to be manually called after each or all tests are done, or use
     Returns:
         String
     &#34;&#34;&#34;
-    return &#39;syn000&#39;</code></pre>
+    return &#39;syn0&#39;</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.is_diposable"><code class="name flex">
@@ -1275,7 +1330,7 @@ This method needs to be manually called after each or all tests are done, or use
 </summary>
 <pre><code class="python">def is_diposable(self, obj):
     &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
-    return type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj)</code></pre>
+    return obj is None or (type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj) or self._is_filehandle(obj))</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.test_id"><code class="name flex">

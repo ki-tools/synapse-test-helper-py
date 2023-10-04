@@ -18,4 +18,4 @@ tox = "*"
 synapseclient = ">=2.1.0,<3.0.0"
 
 [requires]
-python_version = "3.7"
+python_version = "3.10"

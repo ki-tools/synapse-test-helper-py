@@ -1,8 +1,27 @@
 import os
 import pytest
+import json
 import synapseclient
 from synapseclient import Project, Folder, File, Team, Wiki
 from src.synapse_test_helper import SynapseTestHelper
+
+
+@pytest.fixture
+def filehandle_interface():
+    return {
+        'id': '',
+        'etag': '',
+        'createdBy': '',
+        'createdOn': '',
+        'modifiedOn': '',
+        'concreteType': '',
+        'contentType': '',
+        'contentMd5': '',
+        'fileName': '',
+        'storageLocationId': '',
+        'contentSize': '',
+        'status': '',
+    }
 
 
 def test_context_manager(mk_tempfile):
@@ -49,7 +68,8 @@ def test_configure(syn_client):
     assert 'synapse_client must be logged in.' in str(ex)
 
 
-def test_is_diposable(synapse_test_helper, mk_tempdir, mk_tempfile):
+def test_is_diposable(synapse_test_helper, mk_tempdir, mk_tempfile, filehandle_interface):
+    assert synapse_test_helper.is_diposable(None)
     assert synapse_test_helper.is_diposable(Project())
     assert synapse_test_helper.is_diposable(Folder(parentId='syn0'))
     assert synapse_test_helper.is_diposable(File(parentId='syn0'))
@@ -60,6 +80,7 @@ def test_is_diposable(synapse_test_helper, mk_tempdir, mk_tempfile):
     assert synapse_test_helper.is_diposable(object()) is False
     assert synapse_test_helper.is_diposable('') is False
     assert synapse_test_helper.is_diposable('not_abs_path/test') is False
+    assert synapse_test_helper.is_diposable(filehandle_interface)
 
 
 def test_test_id(synapse_test_helper):
@@ -86,7 +107,7 @@ def test_fake_synapse_id(synapse_test_helper):
         synapse_test_helper.client().get(fake_id)
 
     err_str = str(ex.value)
-    assert 'The resource you are attempting to access cannot be found' in err_str
+    assert 'The resource you are attempting to access cannot be found' in err_str or 'does not exist' in err_str
 
 
 def test_dispose_of(synapse_test_helper, mk_tempfile):
@@ -105,6 +126,10 @@ def test_dispose_of(synapse_test_helper, mk_tempfile):
     # Does not add duplicates
     synapse_test_helper.dispose_of(obj1, obj2)
     assert len(synapse_test_helper.trash) == 4
+
+    # Allows None
+    synapse_test_helper.dispose_of(None, None)
+    assert len(synapse_test_helper.trash) == 5
 
     # Raises exception for non-disposable objects.
     with pytest.raises(ValueError):
@@ -134,6 +159,22 @@ def test_dispose(temp_file, mk_tempdir, synapse_test_helper):
     file = synapse_test_helper.client().store(File(name=synapse_test_helper.uniq_name(
         prefix='File '), path=temp_file, parent=folder))
 
+    filehandle = file['_file_handle']
+    copy_file_handle_request = {"copyRequests": [
+        {
+            "originalFile": {
+                "fileHandleId": filehandle['id'],
+                "associateObjectId": file.id,
+                "associateObjectType": 'FileEntity'
+            }
+        }
+    ]}
+    copy_response = synapse_test_helper.client().restPOST('/filehandles/copy',
+                                                          body=json.dumps(copy_file_handle_request),
+                                                          endpoint=synapse_test_helper.client().fileHandleEndpoint)
+    copy_results = copy_response.get("copyResults")
+    filehandle = copy_results[0]['newFileHandle']
+
     team = synapse_test_helper.client().store(
         Team(name=synapse_test_helper.uniq_name(prefix='Team ')))
 
@@ -143,7 +184,9 @@ def test_dispose(temp_file, mk_tempdir, synapse_test_helper):
     wikiChild = synapse_test_helper.client().store(Wiki(title=synapse_test_helper.uniq_name(
         prefix='Wiki Child '), owner=project, parentWikiId=wiki.id))
 
-    disposable_objects = [project, folder, file, team, wiki, wikiChild, temp_file]
+    none = None
+
+    disposable_objects = [project, folder, file, filehandle, team, wiki, wikiChild, temp_file, none]
 
     # Removes individual items in the trash
     synapse_test_helper.dispose(wiki, team)
@@ -158,7 +201,9 @@ def test_dispose(temp_file, mk_tempdir, synapse_test_helper):
     assert len(synapse_test_helper.trash) == 0
 
     for disposable_object in disposable_objects:
-        if isinstance(disposable_object, str):
+        if disposable_object is None:
+            assert disposable_object not in synapse_test_helper.trash
+        elif isinstance(disposable_object, str):
             assert os.path.exists(disposable_object) is False
         else:
             with pytest.raises(synapseclient.core.exceptions.SynapseHTTPError) as ex:
@@ -166,6 +211,9 @@ def test_dispose(temp_file, mk_tempdir, synapse_test_helper):
                     synapse_test_helper.client().getWiki(disposable_object)
                 elif isinstance(disposable_object, Team):
                     synapse_test_helper.client().getTeam(disposable_object.id)
+                elif synapse_test_helper._is_filehandle(disposable_object):
+                    synapse_test_helper.client().restGET('/fileHandle/{0}'.format(disposable_object['id']),
+                                                         endpoint=synapse_test_helper.client().fileHandleEndpoint)
                 else:
                     synapse_test_helper.client().get(disposable_object, downloadFile=False)
 
@@ -181,8 +229,11 @@ def test_dispose_temp_files(synapse_test_helper, mk_tempdir, mk_tempfile):
     temp_file2 = synapse_test_helper.create_temp_file(name='test_temp_file2')
     assert 'test_temp_file2' in temp_file2
 
+    assert synapse_test_helper._is_path(None) is False
+
     temp_files = [temp_file1, temp_file2]
     for temp_file in temp_files:
+        assert synapse_test_helper._is_path(temp_file)
         assert os.path.dirname(temp_file) in synapse_test_helper.trash
         assert temp_file in synapse_test_helper.trash
 
@@ -203,6 +254,7 @@ def test_dispose_temp_files(synapse_test_helper, mk_tempdir, mk_tempfile):
                   mk_tempfile(dir=temp_dir)
                   ]
     for temp_path in temp_paths:
+        assert synapse_test_helper._is_path(temp_path)
         synapse_test_helper.dispose_of(temp_path)
         assert temp_path in synapse_test_helper.trash
 
@@ -219,6 +271,29 @@ def test_dispose_temp_files(synapse_test_helper, mk_tempdir, mk_tempfile):
     assert os.path.exists(temp_dir)
     assert os.path.exists(temp_file)
     assert len(synapse_test_helper.trash) == 0
+
+
+def test_dispose_filehandles(synapse_test_helper, filehandle_interface):
+    assert synapse_test_helper._is_filehandle(None) is False
+    assert synapse_test_helper._is_filehandle(filehandle_interface)
+    syn_file = synapse_test_helper.create_file()
+    syn_filehandle = syn_file['_file_handle']
+    not_syn_filehandle = syn_filehandle.copy()
+    not_syn_filehandle.pop('status')
+
+    assert synapse_test_helper._is_filehandle(syn_filehandle)
+    assert synapse_test_helper.is_diposable(syn_filehandle)
+    synapse_test_helper.dispose_of(syn_filehandle)
+    assert syn_filehandle in synapse_test_helper.trash
+    synapse_test_helper.dispose()
+    assert len(synapse_test_helper.trash) == 0
+
+    assert synapse_test_helper._is_filehandle(not_syn_filehandle) is False
+    assert synapse_test_helper.is_diposable(not_syn_filehandle) is False
+    with pytest.raises(ValueError, match='Non-disposable type'):
+        synapse_test_helper.dispose_of(not_syn_filehandle)
+    with pytest.raises(ValueError, match='Non-disposable type'):
+        synapse_test_helper.dispose(not_syn_filehandle)
 
 
 def test_create_project(synapse_test_helper):

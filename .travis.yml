@@ -3,20 +3,25 @@ language: python
 matrix:
   include:
     - os: linux
-      python: 3.7
-    - os: linux
       python: 3.8
     - os: linux
       python: 3.9
-    - os: osx
-      language: generic
-      env: PYENV_VERSION=3.7.0
+    - os: linux
+      python: 3.10
+    - os: linux
+      python: 3.11
     - os: osx
       language: generic
       env: PYENV_VERSION=3.8.0
     - os: osx
       language: generic
       env: PYENV_VERSION=3.9.0
+    - os: osx
+      language: generic
+      env: PYENV_VERSION=3.10.0
+    - os: osx
+      language: generic
+      env: PYENV_VERSION=3.11.0
 install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ] ; then brew update ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ] ; then brew outdated pyenv || brew upgrade pyenv ; fi
