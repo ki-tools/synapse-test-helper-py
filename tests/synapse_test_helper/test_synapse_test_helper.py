@@ -24,9 +24,9 @@ def filehandle_interface():
     }
 
 
-def test_context_manager(mk_tempfile):
+def test_context_manager(mk_syn_client, mk_tempfile):
     sth = None
-    with SynapseTestHelper() as synapse_test_helper:
+    with SynapseTestHelper(mk_syn_client()) as synapse_test_helper:
         sth = synapse_test_helper
         synapse_test_helper.dispose_of(mk_tempfile())
         assert len(sth.trash) == 1
@@ -34,37 +34,54 @@ def test_context_manager(mk_tempfile):
     assert len(sth.trash) == 0
 
 
-def test_deconfigure():
-    assert SynapseTestHelper.configured() is True
+def test_deconfigure(mk_syn_client):
+    syn_client = mk_syn_client()
+    with SynapseTestHelper(syn_client) as sth:
+        assert sth.client == syn_client
+        sth.deconfigure()
+        assert sth.configured is False
+        assert sth._synapse_client is None
+        assert sth.client is None
 
-    synapse_test_helper = SynapseTestHelper()
-    assert synapse_test_helper.client() is not None
-
-    SynapseTestHelper.deconfigure()
-
-    assert SynapseTestHelper.configured() is False
-    assert SynapseTestHelper._synapse_client is None
-    assert synapse_test_helper.client() is None
-
-    with pytest.raises(Exception):
-        synapse_test_helper.create_project()
+        with pytest.raises(Exception):
+            sth.create_project()
 
 
-def test_configure(syn_client):
-    assert SynapseTestHelper.deconfigure()
-    assert SynapseTestHelper.configured() is False
-    assert SynapseTestHelper.configure(syn_client)
-    assert SynapseTestHelper.configured()
+def test_configure(syn_client, mk_syn_client):
+    syn_client = mk_syn_client()
 
     with SynapseTestHelper() as sth:
-        assert sth.client() == syn_client
+        assert sth.client is None
 
+    # Instance
+    with SynapseTestHelper(syn_client) as sth:
+        assert id(sth.client) == id(syn_client)
+        assert sth.configured is True
+        assert sth.deconfigure()
+        assert sth.configured is False
+        assert sth.configure(syn_client)
+        assert sth.configured
+        assert id(sth.client) == id(syn_client)
+
+    # Nested
+    with SynapseTestHelper(syn_client) as parent_sth:
+        assert id(parent_sth.client) == id(syn_client)
+
+        child_syn_client = mk_syn_client()
+        with SynapseTestHelper(child_syn_client) as sth_child:
+            assert id(sth_child.client) == id(child_syn_client)
+            assert sth_child.client == child_syn_client
+        assert id(sth_child.client) == id(child_syn_client)
+
+    # Errors
     with pytest.raises(Exception) as ex:
-        SynapseTestHelper.configure(object())
+        with SynapseTestHelper() as sth:
+            sth.configure(object())
     assert 'synapse_client must be an instance if synapseclient.Synapse' in str(ex)
 
     with pytest.raises(Exception) as ex:
-        SynapseTestHelper.configure(synapseclient.Synapse())
+        with SynapseTestHelper() as sth:
+            sth.configure(synapseclient.Synapse())
     assert 'synapse_client must be logged in.' in str(ex)
 
 
@@ -84,27 +101,27 @@ def test_is_diposable(synapse_test_helper, mk_tempdir, mk_tempfile, filehandle_i
 
 
 def test_test_id(synapse_test_helper):
-    assert synapse_test_helper.test_id() == synapse_test_helper._test_id
+    assert synapse_test_helper.test_id == synapse_test_helper._test_id
 
 
 def test_uniq_name(synapse_test_helper):
-    assert synapse_test_helper.test_id() in synapse_test_helper.uniq_name()
+    assert synapse_test_helper.test_id in synapse_test_helper.uniq_name()
 
     last_name = None
     for i in list(range(3)):
         uniq_name = synapse_test_helper.uniq_name(prefix='aaa-', postfix='-zzz')
         assert uniq_name != last_name
         assert uniq_name.startswith(
-            'aaa-{0}'.format(synapse_test_helper.test_id()))
+            'aaa-{0}'.format(synapse_test_helper.test_id))
         assert uniq_name.endswith('-zzz')
         last_name = uniq_name
 
 
 def test_fake_synapse_id(synapse_test_helper):
-    fake_id = synapse_test_helper.fake_synapse_id()
+    fake_id = synapse_test_helper.fake_synapse_id
 
     with pytest.raises(synapseclient.core.exceptions.SynapseHTTPError) as ex:
-        synapse_test_helper.client().get(fake_id)
+        synapse_test_helper.client.get(fake_id)
 
     err_str = str(ex.value)
     assert 'The resource you are attempting to access cannot be found' in err_str or 'does not exist' in err_str
@@ -151,12 +168,12 @@ def test_dispose(temp_file, mk_tempdir, synapse_test_helper):
     with pytest.raises(ValueError):
         synapse_test_helper.dispose(object())
 
-    project = synapse_test_helper.client().store(Project(name=synapse_test_helper.uniq_name()))
+    project = synapse_test_helper.client.store(Project(name=synapse_test_helper.uniq_name()))
 
-    folder = synapse_test_helper.client().store(
+    folder = synapse_test_helper.client.store(
         Folder(name=synapse_test_helper.uniq_name(prefix='Folder '), parent=project))
 
-    file = synapse_test_helper.client().store(File(name=synapse_test_helper.uniq_name(
+    file = synapse_test_helper.client.store(File(name=synapse_test_helper.uniq_name(
         prefix='File '), path=temp_file, parent=folder))
 
     filehandle = file['_file_handle']
@@ -169,19 +186,19 @@ def test_dispose(temp_file, mk_tempdir, synapse_test_helper):
             }
         }
     ]}
-    copy_response = synapse_test_helper.client().restPOST('/filehandles/copy',
-                                                          body=json.dumps(copy_file_handle_request),
-                                                          endpoint=synapse_test_helper.client().fileHandleEndpoint)
+    copy_response = synapse_test_helper.client.restPOST('/filehandles/copy',
+                                                        body=json.dumps(copy_file_handle_request),
+                                                        endpoint=synapse_test_helper.client.fileHandleEndpoint)
     copy_results = copy_response.get("copyResults")
     filehandle = copy_results[0]['newFileHandle']
 
-    team = synapse_test_helper.client().store(
+    team = synapse_test_helper.client.store(
         Team(name=synapse_test_helper.uniq_name(prefix='Team ')))
 
-    wiki = synapse_test_helper.client().store(
+    wiki = synapse_test_helper.client.store(
         Wiki(title=synapse_test_helper.uniq_name(prefix='Wiki '), owner=project))
 
-    wikiChild = synapse_test_helper.client().store(Wiki(title=synapse_test_helper.uniq_name(
+    wikiChild = synapse_test_helper.client.store(Wiki(title=synapse_test_helper.uniq_name(
         prefix='Wiki Child '), owner=project, parentWikiId=wiki.id))
 
     none = None
@@ -208,14 +225,14 @@ def test_dispose(temp_file, mk_tempdir, synapse_test_helper):
         else:
             with pytest.raises(synapseclient.core.exceptions.SynapseHTTPError) as ex:
                 if isinstance(disposable_object, Wiki):
-                    synapse_test_helper.client().getWiki(disposable_object)
+                    synapse_test_helper.client.getWiki(disposable_object)
                 elif isinstance(disposable_object, Team):
-                    synapse_test_helper.client().getTeam(disposable_object.id)
+                    synapse_test_helper.client.getTeam(disposable_object.id)
                 elif synapse_test_helper._is_filehandle(disposable_object):
-                    synapse_test_helper.client().restGET('/fileHandle/{0}'.format(disposable_object['id']),
-                                                         endpoint=synapse_test_helper.client().fileHandleEndpoint)
+                    synapse_test_helper.client.restGET('/fileHandle/{0}'.format(disposable_object['id']),
+                                                       endpoint=synapse_test_helper.client.fileHandleEndpoint)
                 else:
-                    synapse_test_helper.client().get(disposable_object, downloadFile=False)
+                    synapse_test_helper.client.get(disposable_object, downloadFile=False)
 
             err_str = str(ex.value)
             assert "Not Found" in err_str or "cannot be found" in err_str or "is in trash can" in err_str or "does not exist" in err_str
@@ -313,7 +330,7 @@ def test_create_project(synapse_test_helper):
 
     # Generates a name
     project = synapse_test_helper.create_project()
-    assert synapse_test_helper.test_id() in project.name
+    assert synapse_test_helper.test_id in project.name
     disposed.append(project)
 
     for project in disposed:
@@ -328,8 +345,8 @@ def test_create_folder(synapse_test_helper):
 
     # Creates the project for the folder and generates a name.
     syn_folder1 = synapse_test_helper.create_folder()
-    assert synapse_test_helper.test_id() in syn_folder1.name
-    syn_parent = synapse_test_helper.client().get(syn_folder1.parentId)
+    assert synapse_test_helper.test_id in syn_folder1.name
+    syn_parent = synapse_test_helper.client.get(syn_folder1.parentId)
     assert isinstance(syn_parent, synapseclient.Project)
     disposed.append(syn_folder1)
 
@@ -349,7 +366,7 @@ def test_create_folder(synapse_test_helper):
 
     # Generates a name
     syn_folder4 = synapse_test_helper.create_folder(parent=syn_parent)
-    assert synapse_test_helper.test_id() in syn_folder4.name
+    assert synapse_test_helper.test_id in syn_folder4.name
     disposed.append(syn_folder4)
 
     for folder in disposed:
@@ -366,7 +383,7 @@ def test_create_file(synapse_test_helper, mk_tempfile):
     syn_file = synapse_test_helper.create_file()
     assert isinstance(syn_file, synapseclient.File)
     assert os.path.isfile(syn_file.path)
-    syn_parent = synapse_test_helper.client().get(syn_file.parentId)
+    syn_parent = synapse_test_helper.client.get(syn_file.parentId)
     assert isinstance(syn_parent, synapseclient.Project)
     disposed.append(syn_file.path)
 
@@ -417,7 +434,7 @@ def test_create_team(synapse_test_helper):
 
     # Generates a name
     team = synapse_test_helper.create_team()
-    assert synapse_test_helper.test_id() in team.name
+    assert synapse_test_helper.test_id in team.name
 
 
 def test_create_wiki(synapse_test_helper):
@@ -436,7 +453,7 @@ def test_create_wiki(synapse_test_helper):
 
     # Generates a title
     wiki = synapse_test_helper.create_wiki(owner=project)
-    assert synapse_test_helper.test_id() in wiki.title
+    assert synapse_test_helper.test_id in wiki.title
 
     synapse_test_helper.dispose()
     assert len(synapse_test_helper.trash) == 0

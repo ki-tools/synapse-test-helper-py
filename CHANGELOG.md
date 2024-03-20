@@ -1,5 +1,18 @@
 # Change Log
 
+## Version 0.1.0 (2024-03-19)
+
+### Changes
+
+- Breaking Changes:
+    - Removed class methods. Use context manager exclusively.
+    - Changed to properties:
+        - configured
+        - client
+        - test_id
+        - fake_synapse_id
+- Added type hints.
+
 ## Version 0.0.3 (2023-10-04)
 
 ### Changes

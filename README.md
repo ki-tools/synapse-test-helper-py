@@ -21,17 +21,11 @@ conftest.py:
 from synapse_test_helper import SynapseTestHelper
 
 
-@pytest.fixture(scope='session', autouse=True)
-def syn_client():
-    synapse_client = synapseclient.Synapse()
-    synapse_client.login()  # Set to use your preferred login method for Synapse.
-    SynapseTestHelper.configure(synapse_client)
-    return synapse_client
-
-
 @pytest.fixture
 def synapse_test_helper():
-    with SynapseTestHelper() as sth:
+    synapse_client = synapseclient.Synapse()
+    synapse_client.login()  # Set to use your preferred login method for Synapse.
+    with SynapseTestHelper(synapse_client) as sth:
         yield sth
 ```
 

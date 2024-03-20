@@ -26,7 +26,9 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import logging
+<pre><code class="python">from __future__ import annotations
+import typing as t
+import logging
 import os
 import uuid
 import time
@@ -39,9 +41,12 @@ from synapseclient import Project, Folder, File, Team, Wiki
 class SynapseTestHelper:
     &#34;&#34;&#34;Test helper for working with Synapse.&#34;&#34;&#34;
 
-    def __init__(self):
+    def __init__(self, synapse_client: synapseclient.Synapse = None):
         self._test_id = self._uniq_str()
         self.trash = []
+        self._synapse_client = None
+        if synapse_client:
+            self.configure(synapse_client)
 
     def __enter__(self):
         return self
@@ -49,19 +54,11 @@ class SynapseTestHelper:
     def __exit__(self, type, value, traceback):
         self.dispose()
 
-    _synapse_client = None
-
-    @classmethod
-    def configure(cls, synapse_client):
-        &#34;&#34;&#34;Sets the Synapse client to use for Synapse access.
-
-        Args:
-            synapse_client: A logged in instance of synapseclient.Synapse.
-
-        Returns:
-            True if successful otherwise raises an exception.
-        &#34;&#34;&#34;
-        cls.deconfigure()
+    def configure(
+            self,
+            synapse_client: synapseclient.Synapse
+    ) -&gt; bool:
+        self.deconfigure()
 
         if not isinstance(synapse_client, synapseclient.Synapse):
             raise Exception(&#39;synapse_client must be an instance if synapseclient.Synapse.&#39;)
@@ -69,37 +66,42 @@ class SynapseTestHelper:
         if synapse_client.credentials is None:
             raise Exception(&#39;synapse_client must be logged in.&#39;)
 
-        cls._synapse_client = synapse_client
+        self._synapse_client = synapse_client
 
-        return cls.configured()
+        return self.configured
 
-    @classmethod
-    def deconfigure(cls):
+    def deconfigure(self) -&gt; bool:
         &#34;&#34;&#34;Removes configuration.&#34;&#34;&#34;
-        cls._synapse_client = None
-        return not cls.configured()
+        self._synapse_client = None
+        return not self.configured
 
-    @classmethod
-    def configured(cls):
+    @property
+    def configured(self) -&gt; bool:
         &#34;&#34;&#34;Gets if configured.&#34;&#34;&#34;
-        return cls._synapse_client is not None
+        return self._synapse_client is not None
 
-    def client(self):
+    @property
+    def client(self) -&gt; synapseclient:
         &#34;&#34;&#34;Gets the synapseclient.&#34;&#34;&#34;
         return self._synapse_client
 
-    def _uniq_str(self):
+    def _uniq_str(self) -&gt; str:
         &#34;&#34;&#34;Generates a unique Synapse friendly string.&#34;&#34;&#34;
         return str(uuid.uuid4()).replace(&#39;-&#39;, &#39;_&#39;)
 
-    def test_id(self):
+    @property
+    def test_id(self) -&gt; str:
         &#34;&#34;&#34;Gets a unique value to use as a test identifier.
 
         This string can be used to help identify the test instance that created the object.
         &#34;&#34;&#34;
         return self._test_id
 
-    def uniq_name(self, prefix=None, postfix=None):
+    def uniq_name(
+            self,
+            prefix: str = None,
+            postfix: str = None
+    ) -&gt; str:
         &#34;&#34;&#34;Get a unique string that is Synapse friendly with the test_id in it.
 
         Args:
@@ -113,9 +115,10 @@ class SynapseTestHelper:
             prefix = self._uniq_str()
         if postfix is None:
             postfix = self._uniq_str()
-        return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id(), uuid.uuid4().hex, postfix)
+        return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id, uuid.uuid4().hex, postfix)
 
-    def fake_synapse_id(self):
+    @property
+    def fake_synapse_id(self) -&gt; str:
         &#34;&#34;&#34;Gets a Synapse entity ID that does not exist in Synapse.
 
         Returns:
@@ -139,23 +142,35 @@ class SynapseTestHelper:
         synapseclient.File,
     ]
 
-    def is_diposable(self, obj):
+    def is_diposable(
+            self,
+            obj
+    ) -&gt; bool:
         &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
         return obj is None or (type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj) or self._is_filehandle(obj))
 
-    def _verify_is_disposable(self, obj):
+    def _verify_is_disposable(
+            self,
+            obj
+    ) -&gt; None:
         &#34;&#34;&#34;Checks that an object can be disposed else raises an exception.&#34;&#34;&#34;
         if not self.is_diposable(obj):
             raise ValueError(&#39;Non-disposable type: {0}&#39;.format(type(obj)))
 
-    def dispose_of(self, *disposable_objects):
+    def dispose_of(
+            self,
+            *disposable_objects: list[t.Any]
+    ) -&gt; None:
         &#34;&#34;&#34;Adds a disposable object to the list of objects to be deleted.&#34;&#34;&#34;
         for obj in disposable_objects:
             self._verify_is_disposable(obj)
             if obj not in self.trash:
                 self.trash.append(obj)
 
-    def dispose(self, *disposable_objects):
+    def dispose(
+            self,
+            *disposable_objects: list[t.Any] | [] | None
+    ) -&gt; bool:
         &#34;&#34;&#34;Deletes any disposable objects that were created during testing.
         This method needs to be manually called after each or all tests are done, or use the context manager.
 
@@ -163,7 +178,7 @@ class SynapseTestHelper:
             *disposable_objects: Objects to delete. Can be in the trash or not.
 
         Returns:
-            None
+            True if all items were deleted, else False.
         &#34;&#34;&#34;
         projects = []
         paths = []
@@ -190,24 +205,29 @@ class SynapseTestHelper:
                 if obj is None:
                     pass
                 elif type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
-                    self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
+                    self.client.restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
                 elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
-                    self.client().delete(obj)
+                    self.client.delete(obj)
                 elif self._is_path(obj):
                     if os.path.isdir(obj):
                         os.rmdir(obj)
                     elif os.path.isfile(obj):
                         os.remove(obj)
                 elif self._is_filehandle(obj):
-                    self.client().restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
-                                             endpoint=self.client().fileHandleEndpoint)
-            except:
-                pass
+                    self.client.restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
+                                           endpoint=self.client.fileHandleEndpoint)
+            except Exception as ex:
+                logging.warning(&#39;Could not delete: {0}, Error: {1}&#39;.format(obj, str(ex)))
 
             if obj in self.trash:
                 self.trash.remove(obj)
 
-    def _is_path(self, obj):
+        return len(objects_to_dispose) == 0
+
+    def _is_path(
+            self,
+            obj
+    ) -&gt; bool:
         &#34;&#34;&#34;Gets if the object is a Path like object.&#34;&#34;&#34;
         try:
             return obj is not None and PurePath(obj).is_absolute()
@@ -227,14 +247,22 @@ class SynapseTestHelper:
                               &#39;contentSize&#39;,
                               &#39;status&#39;]
 
-    def _is_filehandle(self, obj):
+    def _is_filehandle(
+            self,
+            obj
+    ) -&gt; bool:
         &#34;&#34;&#34;
         Gets if the object is a filehandle.
         https://rest-docs.synapse.org/rest/org/sagebionetworks/repo/model/file/FileHandle.html
         &#34;&#34;&#34;
         return obj is not None and isinstance(obj, dict) and all(attr in obj for attr in self.__FILE_HANDLE__ATTRS__)
 
-    def create_project(self, name=None, prefix=None, **kwargs):
+    def create_project(
+            self,
+            name: str = None,
+            prefix: str = None,
+            **kwargs
+    ) -&gt; synapseclient.Project:
         &#34;&#34;&#34;Creates a new Project and adds it to the trash queue.
 
         Args:
@@ -246,11 +274,17 @@ class SynapseTestHelper:
             Project
         &#34;&#34;&#34;
         kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
-        project = self.client().store(Project(**kwargs))
+        project = self.client.store(Project(**kwargs))
         self.dispose_of(project)
         return project
 
-    def create_folder(self, name=None, prefix=None, parent=None, **kwargs):
+    def create_folder(
+            self,
+            name: str = None,
+            prefix: str = None,
+            parent: synapseclient.Project | synapseclient.Folder = None,
+            **kwargs
+    ) -&gt; synapseclient.Folder:
         &#34;&#34;&#34;Creates a new Folder and adds it to the trash queue.
 
         Args:
@@ -271,11 +305,17 @@ class SynapseTestHelper:
 
         kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
 
-        folder = self.client().store(Folder(**kwargs))
+        folder = self.client.store(Folder(**kwargs))
         self.dispose_of(folder)
         return folder
 
-    def create_file(self, name=None, path=None, parent=None, **kwargs):
+    def create_file(
+            self,
+            name: str = None,
+            path: str = None,
+            parent: synapseclient.Project | synapseclient.Folder = None,
+            **kwargs
+    ) -&gt; synapseclient.File:
         &#34;&#34;&#34;Creates a new File and adds it to the trash queue.
 
         Args:
@@ -304,25 +344,36 @@ class SynapseTestHelper:
                 logging.warning(&#39;Synapse file path not specified. Temporary file will be created.&#39;)
                 kwargs[&#39;path&#39;] = self.create_temp_file(name=name)
 
-        file = self.client().store(File(**kwargs))
+        file = self.client.store(File(**kwargs))
         self.dispose_of(file)
         return file
 
-    def create_team(self, **kwargs):
-        &#34;&#34;&#34;Creates a new Team and adds it to the trash queue.&#34;&#34;&#34;
-        if &#39;name&#39; not in kwargs:
-            kwargs[&#39;name&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+    def create_team(
+            self,
+            name: str = None,
+            prefix: str = None,
+            **kwargs
+    ) -&gt; synapseclient.Team:
+        &#34;&#34;&#34;
+        Creates a new Team and adds it to the trash queue.
 
-        kwargs.pop(&#39;prefix&#39;, None)
+        Args:
+            name: Name of the Team. A unique name will be generated if not set. (optional)
+            prefix: Prefix to add to the generated team name if the name arg is None. (optional)
 
-        team = self.client().store(Team(**kwargs))
-
-        self.wait_for_team_to_be_available(team)
-
+        Returns:
+            Team
+        &#34;&#34;&#34;
+        kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+        team = self.client.store(Team(**kwargs))
         self.dispose_of(team)
+        self.wait_for_team_to_be_available(team)
         return team
 
-    def wait_for_team_to_be_available(self, team):
+    def wait_for_team_to_be_available(
+            self,
+            team: synapseclient.Team
+    ) -&gt; synapseclient.Team:
         &#34;&#34;&#34;Waits for a newly created team to be available in Synapse.
         There can be a delay from when a team is created and when syn.get() will return it.
         &#34;&#34;&#34;
@@ -330,7 +381,7 @@ class SynapseTestHelper:
         while True:
             tries += 1
             try:
-                self.client().getTeam(team.name)
+                return self.client.getTeam(team.name)
                 break
             except ValueError:
                 if tries &gt;= 10:
@@ -338,20 +389,38 @@ class SynapseTestHelper:
                 else:
                     time.sleep(3)
 
-    def create_wiki(self, **kwargs):
-        &#34;&#34;&#34;Creates a new Wiki and adds it to the trash queue.&#34;&#34;&#34;
-        if &#39;title&#39; not in kwargs:
-            kwargs[&#39;title&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
-        kwargs.pop(&#39;prefix&#39;, None)
+    def create_wiki(
+            self,
+            title: str = None,
+            prefix: str = None,
+            **kwargs
+    ) -&gt; synapseclient.Wiki:
+        &#34;&#34;&#34;
+        Creates a new Wiki and adds it to the trash queue.
+
+        Args:
+            title: Title of the wiki. A unique name will be generated if not set. (optional)
+            prefix: Prefix to add to the generated wiki title if the name arg is None. (optional)
+
+        Returns:
+            Wiki
+        &#34;&#34;&#34;
+        kwargs[&#39;title&#39;] = title if title else self.uniq_name(prefix=prefix)
 
         if &#39;markdown&#39; not in kwargs:
             kwargs[&#39;markdown&#39;] = &#39;My Wiki {0}&#39;.format(kwargs[&#39;title&#39;])
 
-        wiki = self.client().store(Wiki(**kwargs))
+        wiki = self.client.store(Wiki(**kwargs))
         self.dispose_of(wiki)
         return wiki
 
-    def create_temp_dir(self, name=None, suffix=None, prefix=None, dir=None):
+    def create_temp_dir(
+            self,
+            name: str = None,
+            suffix: str = None,
+            prefix: str = None,
+            dir: str = None
+    ) -&gt; str:
         &#34;&#34;&#34;Creates a temp directory that will be disposed.
 
         Args:
@@ -380,7 +449,14 @@ class SynapseTestHelper:
         self.dispose_of(temp_dir)
         return temp_dir
 
-    def create_temp_file(self, name=None, suffix=None, prefix=None, dir=None, content=None):
+    def create_temp_file(
+            self,
+            name: str = None,
+            suffix: str = None,
+            prefix: str = None,
+            dir: str = None,
+            content: str = None
+    ) -&gt; str:
         &#34;&#34;&#34;Creates a temp file that will be disposed.
         If dir is not specified then a temp directory will be created and disposed too.
 
@@ -426,6 +502,7 @@ class SynapseTestHelper:
 <dl>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper"><code class="flex name class">
 <span>class <span class="ident">SynapseTestHelper</span></span>
+<span>(</span><span>synapse_client: synapseclient.Synapse = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Test helper for working with Synapse.</p></div>
@@ -436,9 +513,12 @@ class SynapseTestHelper:
 <pre><code class="python">class SynapseTestHelper:
     &#34;&#34;&#34;Test helper for working with Synapse.&#34;&#34;&#34;
 
-    def __init__(self):
+    def __init__(self, synapse_client: synapseclient.Synapse = None):
         self._test_id = self._uniq_str()
         self.trash = []
+        self._synapse_client = None
+        if synapse_client:
+            self.configure(synapse_client)
 
     def __enter__(self):
         return self
@@ -446,19 +526,11 @@ class SynapseTestHelper:
     def __exit__(self, type, value, traceback):
         self.dispose()
 
-    _synapse_client = None
-
-    @classmethod
-    def configure(cls, synapse_client):
-        &#34;&#34;&#34;Sets the Synapse client to use for Synapse access.
-
-        Args:
-            synapse_client: A logged in instance of synapseclient.Synapse.
-
-        Returns:
-            True if successful otherwise raises an exception.
-        &#34;&#34;&#34;
-        cls.deconfigure()
+    def configure(
+            self,
+            synapse_client: synapseclient.Synapse
+    ) -&gt; bool:
+        self.deconfigure()
 
         if not isinstance(synapse_client, synapseclient.Synapse):
             raise Exception(&#39;synapse_client must be an instance if synapseclient.Synapse.&#39;)
@@ -466,37 +538,42 @@ class SynapseTestHelper:
         if synapse_client.credentials is None:
             raise Exception(&#39;synapse_client must be logged in.&#39;)
 
-        cls._synapse_client = synapse_client
+        self._synapse_client = synapse_client
 
-        return cls.configured()
+        return self.configured
 
-    @classmethod
-    def deconfigure(cls):
+    def deconfigure(self) -&gt; bool:
         &#34;&#34;&#34;Removes configuration.&#34;&#34;&#34;
-        cls._synapse_client = None
-        return not cls.configured()
+        self._synapse_client = None
+        return not self.configured
 
-    @classmethod
-    def configured(cls):
+    @property
+    def configured(self) -&gt; bool:
         &#34;&#34;&#34;Gets if configured.&#34;&#34;&#34;
-        return cls._synapse_client is not None
+        return self._synapse_client is not None
 
-    def client(self):
+    @property
+    def client(self) -&gt; synapseclient:
         &#34;&#34;&#34;Gets the synapseclient.&#34;&#34;&#34;
         return self._synapse_client
 
-    def _uniq_str(self):
+    def _uniq_str(self) -&gt; str:
         &#34;&#34;&#34;Generates a unique Synapse friendly string.&#34;&#34;&#34;
         return str(uuid.uuid4()).replace(&#39;-&#39;, &#39;_&#39;)
 
-    def test_id(self):
+    @property
+    def test_id(self) -&gt; str:
         &#34;&#34;&#34;Gets a unique value to use as a test identifier.
 
         This string can be used to help identify the test instance that created the object.
         &#34;&#34;&#34;
         return self._test_id
 
-    def uniq_name(self, prefix=None, postfix=None):
+    def uniq_name(
+            self,
+            prefix: str = None,
+            postfix: str = None
+    ) -&gt; str:
         &#34;&#34;&#34;Get a unique string that is Synapse friendly with the test_id in it.
 
         Args:
@@ -510,9 +587,10 @@ class SynapseTestHelper:
             prefix = self._uniq_str()
         if postfix is None:
             postfix = self._uniq_str()
-        return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id(), uuid.uuid4().hex, postfix)
+        return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id, uuid.uuid4().hex, postfix)
 
-    def fake_synapse_id(self):
+    @property
+    def fake_synapse_id(self) -&gt; str:
         &#34;&#34;&#34;Gets a Synapse entity ID that does not exist in Synapse.
 
         Returns:
@@ -536,23 +614,35 @@ class SynapseTestHelper:
         synapseclient.File,
     ]
 
-    def is_diposable(self, obj):
+    def is_diposable(
+            self,
+            obj
+    ) -&gt; bool:
         &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
         return obj is None or (type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj) or self._is_filehandle(obj))
 
-    def _verify_is_disposable(self, obj):
+    def _verify_is_disposable(
+            self,
+            obj
+    ) -&gt; None:
         &#34;&#34;&#34;Checks that an object can be disposed else raises an exception.&#34;&#34;&#34;
         if not self.is_diposable(obj):
             raise ValueError(&#39;Non-disposable type: {0}&#39;.format(type(obj)))
 
-    def dispose_of(self, *disposable_objects):
+    def dispose_of(
+            self,
+            *disposable_objects: list[t.Any]
+    ) -&gt; None:
         &#34;&#34;&#34;Adds a disposable object to the list of objects to be deleted.&#34;&#34;&#34;
         for obj in disposable_objects:
             self._verify_is_disposable(obj)
             if obj not in self.trash:
                 self.trash.append(obj)
 
-    def dispose(self, *disposable_objects):
+    def dispose(
+            self,
+            *disposable_objects: list[t.Any] | [] | None
+    ) -&gt; bool:
         &#34;&#34;&#34;Deletes any disposable objects that were created during testing.
         This method needs to be manually called after each or all tests are done, or use the context manager.
 
@@ -560,7 +650,7 @@ class SynapseTestHelper:
             *disposable_objects: Objects to delete. Can be in the trash or not.
 
         Returns:
-            None
+            True if all items were deleted, else False.
         &#34;&#34;&#34;
         projects = []
         paths = []
@@ -587,24 +677,29 @@ class SynapseTestHelper:
                 if obj is None:
                     pass
                 elif type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
-                    self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
+                    self.client.restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
                 elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
-                    self.client().delete(obj)
+                    self.client.delete(obj)
                 elif self._is_path(obj):
                     if os.path.isdir(obj):
                         os.rmdir(obj)
                     elif os.path.isfile(obj):
                         os.remove(obj)
                 elif self._is_filehandle(obj):
-                    self.client().restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
-                                             endpoint=self.client().fileHandleEndpoint)
-            except:
-                pass
+                    self.client.restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
+                                           endpoint=self.client.fileHandleEndpoint)
+            except Exception as ex:
+                logging.warning(&#39;Could not delete: {0}, Error: {1}&#39;.format(obj, str(ex)))
 
             if obj in self.trash:
                 self.trash.remove(obj)
 
-    def _is_path(self, obj):
+        return len(objects_to_dispose) == 0
+
+    def _is_path(
+            self,
+            obj
+    ) -&gt; bool:
         &#34;&#34;&#34;Gets if the object is a Path like object.&#34;&#34;&#34;
         try:
             return obj is not None and PurePath(obj).is_absolute()
@@ -624,14 +719,22 @@ class SynapseTestHelper:
                               &#39;contentSize&#39;,
                               &#39;status&#39;]
 
-    def _is_filehandle(self, obj):
+    def _is_filehandle(
+            self,
+            obj
+    ) -&gt; bool:
         &#34;&#34;&#34;
         Gets if the object is a filehandle.
         https://rest-docs.synapse.org/rest/org/sagebionetworks/repo/model/file/FileHandle.html
         &#34;&#34;&#34;
         return obj is not None and isinstance(obj, dict) and all(attr in obj for attr in self.__FILE_HANDLE__ATTRS__)
 
-    def create_project(self, name=None, prefix=None, **kwargs):
+    def create_project(
+            self,
+            name: str = None,
+            prefix: str = None,
+            **kwargs
+    ) -&gt; synapseclient.Project:
         &#34;&#34;&#34;Creates a new Project and adds it to the trash queue.
 
         Args:
@@ -643,11 +746,17 @@ class SynapseTestHelper:
             Project
         &#34;&#34;&#34;
         kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
-        project = self.client().store(Project(**kwargs))
+        project = self.client.store(Project(**kwargs))
         self.dispose_of(project)
         return project
 
-    def create_folder(self, name=None, prefix=None, parent=None, **kwargs):
+    def create_folder(
+            self,
+            name: str = None,
+            prefix: str = None,
+            parent: synapseclient.Project | synapseclient.Folder = None,
+            **kwargs
+    ) -&gt; synapseclient.Folder:
         &#34;&#34;&#34;Creates a new Folder and adds it to the trash queue.
 
         Args:
@@ -668,11 +777,17 @@ class SynapseTestHelper:
 
         kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
 
-        folder = self.client().store(Folder(**kwargs))
+        folder = self.client.store(Folder(**kwargs))
         self.dispose_of(folder)
         return folder
 
-    def create_file(self, name=None, path=None, parent=None, **kwargs):
+    def create_file(
+            self,
+            name: str = None,
+            path: str = None,
+            parent: synapseclient.Project | synapseclient.Folder = None,
+            **kwargs
+    ) -&gt; synapseclient.File:
         &#34;&#34;&#34;Creates a new File and adds it to the trash queue.
 
         Args:
@@ -701,25 +816,36 @@ class SynapseTestHelper:
                 logging.warning(&#39;Synapse file path not specified. Temporary file will be created.&#39;)
                 kwargs[&#39;path&#39;] = self.create_temp_file(name=name)
 
-        file = self.client().store(File(**kwargs))
+        file = self.client.store(File(**kwargs))
         self.dispose_of(file)
         return file
 
-    def create_team(self, **kwargs):
-        &#34;&#34;&#34;Creates a new Team and adds it to the trash queue.&#34;&#34;&#34;
-        if &#39;name&#39; not in kwargs:
-            kwargs[&#39;name&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+    def create_team(
+            self,
+            name: str = None,
+            prefix: str = None,
+            **kwargs
+    ) -&gt; synapseclient.Team:
+        &#34;&#34;&#34;
+        Creates a new Team and adds it to the trash queue.
 
-        kwargs.pop(&#39;prefix&#39;, None)
+        Args:
+            name: Name of the Team. A unique name will be generated if not set. (optional)
+            prefix: Prefix to add to the generated team name if the name arg is None. (optional)
 
-        team = self.client().store(Team(**kwargs))
-
-        self.wait_for_team_to_be_available(team)
-
+        Returns:
+            Team
+        &#34;&#34;&#34;
+        kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+        team = self.client.store(Team(**kwargs))
         self.dispose_of(team)
+        self.wait_for_team_to_be_available(team)
         return team
 
-    def wait_for_team_to_be_available(self, team):
+    def wait_for_team_to_be_available(
+            self,
+            team: synapseclient.Team
+    ) -&gt; synapseclient.Team:
         &#34;&#34;&#34;Waits for a newly created team to be available in Synapse.
         There can be a delay from when a team is created and when syn.get() will return it.
         &#34;&#34;&#34;
@@ -727,7 +853,7 @@ class SynapseTestHelper:
         while True:
             tries += 1
             try:
-                self.client().getTeam(team.name)
+                return self.client.getTeam(team.name)
                 break
             except ValueError:
                 if tries &gt;= 10:
@@ -735,20 +861,38 @@ class SynapseTestHelper:
                 else:
                     time.sleep(3)
 
-    def create_wiki(self, **kwargs):
-        &#34;&#34;&#34;Creates a new Wiki and adds it to the trash queue.&#34;&#34;&#34;
-        if &#39;title&#39; not in kwargs:
-            kwargs[&#39;title&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
-        kwargs.pop(&#39;prefix&#39;, None)
+    def create_wiki(
+            self,
+            title: str = None,
+            prefix: str = None,
+            **kwargs
+    ) -&gt; synapseclient.Wiki:
+        &#34;&#34;&#34;
+        Creates a new Wiki and adds it to the trash queue.
+
+        Args:
+            title: Title of the wiki. A unique name will be generated if not set. (optional)
+            prefix: Prefix to add to the generated wiki title if the name arg is None. (optional)
+
+        Returns:
+            Wiki
+        &#34;&#34;&#34;
+        kwargs[&#39;title&#39;] = title if title else self.uniq_name(prefix=prefix)
 
         if &#39;markdown&#39; not in kwargs:
             kwargs[&#39;markdown&#39;] = &#39;My Wiki {0}&#39;.format(kwargs[&#39;title&#39;])
 
-        wiki = self.client().store(Wiki(**kwargs))
+        wiki = self.client.store(Wiki(**kwargs))
         self.dispose_of(wiki)
         return wiki
 
-    def create_temp_dir(self, name=None, suffix=None, prefix=None, dir=None):
+    def create_temp_dir(
+            self,
+            name: str = None,
+            suffix: str = None,
+            prefix: str = None,
+            dir: str = None
+    ) -&gt; str:
         &#34;&#34;&#34;Creates a temp directory that will be disposed.
 
         Args:
@@ -777,7 +921,14 @@ class SynapseTestHelper:
         self.dispose_of(temp_dir)
         return temp_dir
 
-    def create_temp_file(self, name=None, suffix=None, prefix=None, dir=None, content=None):
+    def create_temp_file(
+            self,
+            name: str = None,
+            suffix: str = None,
+            prefix: str = None,
+            dir: str = None,
+            content: str = None
+    ) -&gt; str:
         &#34;&#34;&#34;Creates a temp file that will be disposed.
         If dir is not specified then a temp directory will be created and disposed too.
 
@@ -826,35 +977,87 @@ class SynapseTestHelper:
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Static methods</h3>
+<h3>Instance variables</h3>
 <dl>
-<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.configure"><code class="name flex">
-<span>def <span class="ident">configure</span></span>(<span>synapse_client)</span>
-</code></dt>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.client"><code class="name">var <span class="ident">client</span> : synapseclient</code></dt>
 <dd>
-<div class="desc"><p>Sets the Synapse client to use for Synapse access.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>synapse_client</code></strong></dt>
-<dd>A logged in instance of synapseclient.Synapse.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>True if successful otherwise raises an exception.</p></div>
+<div class="desc"><p>Gets the synapseclient.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@classmethod
-def configure(cls, synapse_client):
-    &#34;&#34;&#34;Sets the Synapse client to use for Synapse access.
-
-    Args:
-        synapse_client: A logged in instance of synapseclient.Synapse.
+<pre><code class="python">@property
+def client(self) -&gt; synapseclient:
+    &#34;&#34;&#34;Gets the synapseclient.&#34;&#34;&#34;
+    return self._synapse_client</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.configured"><code class="name">var <span class="ident">configured</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>Gets if configured.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def configured(self) -&gt; bool:
+    &#34;&#34;&#34;Gets if configured.&#34;&#34;&#34;
+    return self._synapse_client is not None</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.fake_synapse_id"><code class="name">var <span class="ident">fake_synapse_id</span> : str</code></dt>
+<dd>
+<div class="desc"><p>Gets a Synapse entity ID that does not exist in Synapse.</p>
+<h2 id="returns">Returns</h2>
+<p>String</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def fake_synapse_id(self) -&gt; str:
+    &#34;&#34;&#34;Gets a Synapse entity ID that does not exist in Synapse.
 
     Returns:
-        True if successful otherwise raises an exception.
+        String
     &#34;&#34;&#34;
-    cls.deconfigure()
+    return &#39;syn0&#39;</code></pre>
+</details>
+</dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.test_id"><code class="name">var <span class="ident">test_id</span> : str</code></dt>
+<dd>
+<div class="desc"><p>Gets a unique value to use as a test identifier.</p>
+<p>This string can be used to help identify the test instance that created the object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def test_id(self) -&gt; str:
+    &#34;&#34;&#34;Gets a unique value to use as a test identifier.
+
+    This string can be used to help identify the test instance that created the object.
+    &#34;&#34;&#34;
+    return self._test_id</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.configure"><code class="name flex">
+<span>def <span class="ident">configure</span></span>(<span>self, synapse_client: synapseclient.Synapse) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def configure(
+        self,
+        synapse_client: synapseclient.Synapse
+) -&gt; bool:
+    self.deconfigure()
 
     if not isinstance(synapse_client, synapseclient.Synapse):
         raise Exception(&#39;synapse_client must be an instance if synapseclient.Synapse.&#39;)
@@ -862,61 +1065,13 @@ def configure(cls, synapse_client):
     if synapse_client.credentials is None:
         raise Exception(&#39;synapse_client must be logged in.&#39;)
 
-    cls._synapse_client = synapse_client
+    self._synapse_client = synapse_client
 
-    return cls.configured()</code></pre>
-</details>
-</dd>
-<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.configured"><code class="name flex">
-<span>def <span class="ident">configured</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Gets if configured.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def configured(cls):
-    &#34;&#34;&#34;Gets if configured.&#34;&#34;&#34;
-    return cls._synapse_client is not None</code></pre>
-</details>
-</dd>
-<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.deconfigure"><code class="name flex">
-<span>def <span class="ident">deconfigure</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Removes configuration.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def deconfigure(cls):
-    &#34;&#34;&#34;Removes configuration.&#34;&#34;&#34;
-    cls._synapse_client = None
-    return not cls.configured()</code></pre>
-</details>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.client"><code class="name flex">
-<span>def <span class="ident">client</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Gets the synapseclient.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def client(self):
-    &#34;&#34;&#34;Gets the synapseclient.&#34;&#34;&#34;
-    return self._synapse_client</code></pre>
+    return self.configured</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_file"><code class="name flex">
-<span>def <span class="ident">create_file</span></span>(<span>self, name=None, path=None, parent=None, **kwargs)</span>
+<span>def <span class="ident">create_file</span></span>(<span>self, name: str = None, path: str = None, parent: synapseclient.Project | synapseclient.Folder = None, **kwargs) ‑> synapseclient.entity.File</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a new File and adds it to the trash queue.</p>
@@ -936,7 +1091,13 @@ def deconfigure(cls):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_file(self, name=None, path=None, parent=None, **kwargs):
+<pre><code class="python">def create_file(
+        self,
+        name: str = None,
+        path: str = None,
+        parent: synapseclient.Project | synapseclient.Folder = None,
+        **kwargs
+) -&gt; synapseclient.File:
     &#34;&#34;&#34;Creates a new File and adds it to the trash queue.
 
     Args:
@@ -965,13 +1126,13 @@ def deconfigure(cls):
             logging.warning(&#39;Synapse file path not specified. Temporary file will be created.&#39;)
             kwargs[&#39;path&#39;] = self.create_temp_file(name=name)
 
-    file = self.client().store(File(**kwargs))
+    file = self.client.store(File(**kwargs))
     self.dispose_of(file)
     return file</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_folder"><code class="name flex">
-<span>def <span class="ident">create_folder</span></span>(<span>self, name=None, prefix=None, parent=None, **kwargs)</span>
+<span>def <span class="ident">create_folder</span></span>(<span>self, name: str = None, prefix: str = None, parent: synapseclient.Project | synapseclient.Folder = None, **kwargs) ‑> synapseclient.entity.Folder</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a new Folder and adds it to the trash queue.</p>
@@ -991,7 +1152,13 @@ def deconfigure(cls):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_folder(self, name=None, prefix=None, parent=None, **kwargs):
+<pre><code class="python">def create_folder(
+        self,
+        name: str = None,
+        prefix: str = None,
+        parent: synapseclient.Project | synapseclient.Folder = None,
+        **kwargs
+) -&gt; synapseclient.Folder:
     &#34;&#34;&#34;Creates a new Folder and adds it to the trash queue.
 
     Args:
@@ -1012,13 +1179,13 @@ def deconfigure(cls):
 
     kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
 
-    folder = self.client().store(Folder(**kwargs))
+    folder = self.client.store(Folder(**kwargs))
     self.dispose_of(folder)
     return folder</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_project"><code class="name flex">
-<span>def <span class="ident">create_project</span></span>(<span>self, name=None, prefix=None, **kwargs)</span>
+<span>def <span class="ident">create_project</span></span>(<span>self, name: str = None, prefix: str = None, **kwargs) ‑> synapseclient.entity.Project</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a new Project and adds it to the trash queue.</p>
@@ -1036,7 +1203,12 @@ def deconfigure(cls):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_project(self, name=None, prefix=None, **kwargs):
+<pre><code class="python">def create_project(
+        self,
+        name: str = None,
+        prefix: str = None,
+        **kwargs
+) -&gt; synapseclient.Project:
     &#34;&#34;&#34;Creates a new Project and adds it to the trash queue.
 
     Args:
@@ -1048,37 +1220,54 @@ def deconfigure(cls):
         Project
     &#34;&#34;&#34;
     kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
-    project = self.client().store(Project(**kwargs))
+    project = self.client.store(Project(**kwargs))
     self.dispose_of(project)
     return project</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_team"><code class="name flex">
-<span>def <span class="ident">create_team</span></span>(<span>self, **kwargs)</span>
+<span>def <span class="ident">create_team</span></span>(<span>self, name: str = None, prefix: str = None, **kwargs) ‑> synapseclient.team.Team</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Creates a new Team and adds it to the trash queue.</p></div>
+<div class="desc"><p>Creates a new Team and adds it to the trash queue.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>Name of the Team. A unique name will be generated if not set. (optional)</dd>
+<dt><strong><code>prefix</code></strong></dt>
+<dd>Prefix to add to the generated team name if the name arg is None. (optional)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Team</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_team(self, **kwargs):
-    &#34;&#34;&#34;Creates a new Team and adds it to the trash queue.&#34;&#34;&#34;
-    if &#39;name&#39; not in kwargs:
-        kwargs[&#39;name&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
+<pre><code class="python">def create_team(
+        self,
+        name: str = None,
+        prefix: str = None,
+        **kwargs
+) -&gt; synapseclient.Team:
+    &#34;&#34;&#34;
+    Creates a new Team and adds it to the trash queue.
 
-    kwargs.pop(&#39;prefix&#39;, None)
+    Args:
+        name: Name of the Team. A unique name will be generated if not set. (optional)
+        prefix: Prefix to add to the generated team name if the name arg is None. (optional)
 
-    team = self.client().store(Team(**kwargs))
-
-    self.wait_for_team_to_be_available(team)
-
+    Returns:
+        Team
+    &#34;&#34;&#34;
+    kwargs[&#39;name&#39;] = name if name else self.uniq_name(prefix=prefix)
+    team = self.client.store(Team(**kwargs))
     self.dispose_of(team)
+    self.wait_for_team_to_be_available(team)
     return team</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_temp_dir"><code class="name flex">
-<span>def <span class="ident">create_temp_dir</span></span>(<span>self, name=None, suffix=None, prefix=None, dir=None)</span>
+<span>def <span class="ident">create_temp_dir</span></span>(<span>self, name: str = None, suffix: str = None, prefix: str = None, dir: str = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a temp directory that will be disposed.</p>
@@ -1099,7 +1288,13 @@ def deconfigure(cls):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_temp_dir(self, name=None, suffix=None, prefix=None, dir=None):
+<pre><code class="python">def create_temp_dir(
+        self,
+        name: str = None,
+        suffix: str = None,
+        prefix: str = None,
+        dir: str = None
+) -&gt; str:
     &#34;&#34;&#34;Creates a temp directory that will be disposed.
 
     Args:
@@ -1130,7 +1325,7 @@ def deconfigure(cls):
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_temp_file"><code class="name flex">
-<span>def <span class="ident">create_temp_file</span></span>(<span>self, name=None, suffix=None, prefix=None, dir=None, content=None)</span>
+<span>def <span class="ident">create_temp_file</span></span>(<span>self, name: str = None, suffix: str = None, prefix: str = None, dir: str = None, content: str = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a temp file that will be disposed.
@@ -1154,7 +1349,14 @@ If dir is not specified then a temp directory will be created and disposed too.<
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_temp_file(self, name=None, suffix=None, prefix=None, dir=None, content=None):
+<pre><code class="python">def create_temp_file(
+        self,
+        name: str = None,
+        suffix: str = None,
+        prefix: str = None,
+        dir: str = None,
+        content: str = None
+) -&gt; str:
     &#34;&#34;&#34;Creates a temp file that will be disposed.
     If dir is not specified then a temp directory will be created and disposed too.
 
@@ -1190,30 +1392,66 @@ If dir is not specified then a temp directory will be created and disposed too.<
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.create_wiki"><code class="name flex">
-<span>def <span class="ident">create_wiki</span></span>(<span>self, **kwargs)</span>
+<span>def <span class="ident">create_wiki</span></span>(<span>self, title: str = None, prefix: str = None, **kwargs) ‑> synapseclient.wiki.Wiki</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Creates a new Wiki and adds it to the trash queue.</p></div>
+<div class="desc"><p>Creates a new Wiki and adds it to the trash queue.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>title</code></strong></dt>
+<dd>Title of the wiki. A unique name will be generated if not set. (optional)</dd>
+<dt><strong><code>prefix</code></strong></dt>
+<dd>Prefix to add to the generated wiki title if the name arg is None. (optional)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Wiki</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_wiki(self, **kwargs):
-    &#34;&#34;&#34;Creates a new Wiki and adds it to the trash queue.&#34;&#34;&#34;
-    if &#39;title&#39; not in kwargs:
-        kwargs[&#39;title&#39;] = self.uniq_name(prefix=kwargs.get(&#39;prefix&#39;, &#39;&#39;))
-    kwargs.pop(&#39;prefix&#39;, None)
+<pre><code class="python">def create_wiki(
+        self,
+        title: str = None,
+        prefix: str = None,
+        **kwargs
+) -&gt; synapseclient.Wiki:
+    &#34;&#34;&#34;
+    Creates a new Wiki and adds it to the trash queue.
+
+    Args:
+        title: Title of the wiki. A unique name will be generated if not set. (optional)
+        prefix: Prefix to add to the generated wiki title if the name arg is None. (optional)
+
+    Returns:
+        Wiki
+    &#34;&#34;&#34;
+    kwargs[&#39;title&#39;] = title if title else self.uniq_name(prefix=prefix)
 
     if &#39;markdown&#39; not in kwargs:
         kwargs[&#39;markdown&#39;] = &#39;My Wiki {0}&#39;.format(kwargs[&#39;title&#39;])
 
-    wiki = self.client().store(Wiki(**kwargs))
+    wiki = self.client.store(Wiki(**kwargs))
     self.dispose_of(wiki)
     return wiki</code></pre>
 </details>
 </dd>
+<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.deconfigure"><code class="name flex">
+<span>def <span class="ident">deconfigure</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Removes configuration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def deconfigure(self) -&gt; bool:
+    &#34;&#34;&#34;Removes configuration.&#34;&#34;&#34;
+    self._synapse_client = None
+    return not self.configured</code></pre>
+</details>
+</dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.dispose"><code class="name flex">
-<span>def <span class="ident">dispose</span></span>(<span>self, *disposable_objects)</span>
+<span>def <span class="ident">dispose</span></span>(<span>self, *disposable_objects: list[t.Any] | [] | None) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Deletes any disposable objects that were created during testing.
@@ -1224,12 +1462,15 @@ This method needs to be manually called after each or all tests are done, or use
 <dd>Objects to delete. Can be in the trash or not.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>None</p></div>
+<p>True if all items were deleted, else False.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def dispose(self, *disposable_objects):
+<pre><code class="python">def dispose(
+        self,
+        *disposable_objects: list[t.Any] | [] | None
+) -&gt; bool:
     &#34;&#34;&#34;Deletes any disposable objects that were created during testing.
     This method needs to be manually called after each or all tests are done, or use the context manager.
 
@@ -1237,7 +1478,7 @@ This method needs to be manually called after each or all tests are done, or use
         *disposable_objects: Objects to delete. Can be in the trash or not.
 
     Returns:
-        None
+        True if all items were deleted, else False.
     &#34;&#34;&#34;
     projects = []
     paths = []
@@ -1264,26 +1505,28 @@ This method needs to be manually called after each or all tests are done, or use
             if obj is None:
                 pass
             elif type(obj) in self.SKIP_SYNAPSE_TRASH_TYPES:
-                self.client().restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
+                self.client.restDELETE(uri=&#39;/entity/{0}?skipTrashCan=true&#39;.format(obj.get(&#39;id&#39;)))
             elif type(obj) in self.DISPOSABLE_SYNAPSE_TYPES:
-                self.client().delete(obj)
+                self.client.delete(obj)
             elif self._is_path(obj):
                 if os.path.isdir(obj):
                     os.rmdir(obj)
                 elif os.path.isfile(obj):
                     os.remove(obj)
             elif self._is_filehandle(obj):
-                self.client().restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
-                                         endpoint=self.client().fileHandleEndpoint)
-        except:
-            pass
+                self.client.restDELETE(uri=&#39;/fileHandle/{0}&#39;.format(obj.get(&#39;id&#39;)),
+                                       endpoint=self.client.fileHandleEndpoint)
+        except Exception as ex:
+            logging.warning(&#39;Could not delete: {0}, Error: {1}&#39;.format(obj, str(ex)))
 
         if obj in self.trash:
-            self.trash.remove(obj)</code></pre>
+            self.trash.remove(obj)
+
+    return len(objects_to_dispose) == 0</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.dispose_of"><code class="name flex">
-<span>def <span class="ident">dispose_of</span></span>(<span>self, *disposable_objects)</span>
+<span>def <span class="ident">dispose_of</span></span>(<span>self, *disposable_objects: list[t.Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Adds a disposable object to the list of objects to be deleted.</p></div>
@@ -1291,7 +1534,10 @@ This method needs to be manually called after each or all tests are done, or use
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def dispose_of(self, *disposable_objects):
+<pre><code class="python">def dispose_of(
+        self,
+        *disposable_objects: list[t.Any]
+) -&gt; None:
     &#34;&#34;&#34;Adds a disposable object to the list of objects to be deleted.&#34;&#34;&#34;
     for obj in disposable_objects:
         self._verify_is_disposable(obj)
@@ -1299,28 +1545,8 @@ This method needs to be manually called after each or all tests are done, or use
             self.trash.append(obj)</code></pre>
 </details>
 </dd>
-<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.fake_synapse_id"><code class="name flex">
-<span>def <span class="ident">fake_synapse_id</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Gets a Synapse entity ID that does not exist in Synapse.</p>
-<h2 id="returns">Returns</h2>
-<p>String</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def fake_synapse_id(self):
-    &#34;&#34;&#34;Gets a Synapse entity ID that does not exist in Synapse.
-
-    Returns:
-        String
-    &#34;&#34;&#34;
-    return &#39;syn0&#39;</code></pre>
-</details>
-</dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.is_diposable"><code class="name flex">
-<span>def <span class="ident">is_diposable</span></span>(<span>self, obj)</span>
+<span>def <span class="ident">is_diposable</span></span>(<span>self, obj) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Gets if an object is disposable by SynapseTestHelper.</p></div>
@@ -1328,31 +1554,16 @@ This method needs to be manually called after each or all tests are done, or use
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def is_diposable(self, obj):
+<pre><code class="python">def is_diposable(
+        self,
+        obj
+) -&gt; bool:
     &#34;&#34;&#34;Gets if an object is disposable by SynapseTestHelper.&#34;&#34;&#34;
     return obj is None or (type(obj) in self.DISPOSABLE_TYPES or self._is_path(obj) or self._is_filehandle(obj))</code></pre>
 </details>
 </dd>
-<dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.test_id"><code class="name flex">
-<span>def <span class="ident">test_id</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Gets a unique value to use as a test identifier.</p>
-<p>This string can be used to help identify the test instance that created the object.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def test_id(self):
-    &#34;&#34;&#34;Gets a unique value to use as a test identifier.
-
-    This string can be used to help identify the test instance that created the object.
-    &#34;&#34;&#34;
-    return self._test_id</code></pre>
-</details>
-</dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.uniq_name"><code class="name flex">
-<span>def <span class="ident">uniq_name</span></span>(<span>self, prefix=None, postfix=None)</span>
+<span>def <span class="ident">uniq_name</span></span>(<span>self, prefix: str = None, postfix: str = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get a unique string that is Synapse friendly with the test_id in it.</p>
@@ -1369,7 +1580,11 @@ This method needs to be manually called after each or all tests are done, or use
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def uniq_name(self, prefix=None, postfix=None):
+<pre><code class="python">def uniq_name(
+        self,
+        prefix: str = None,
+        postfix: str = None
+) -&gt; str:
     &#34;&#34;&#34;Get a unique string that is Synapse friendly with the test_id in it.
 
     Args:
@@ -1383,11 +1598,11 @@ This method needs to be manually called after each or all tests are done, or use
         prefix = self._uniq_str()
     if postfix is None:
         postfix = self._uniq_str()
-    return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id(), uuid.uuid4().hex, postfix)</code></pre>
+    return &#34;{0}{1}_{2}{3}&#34;.format(prefix, self.test_id, uuid.uuid4().hex, postfix)</code></pre>
 </details>
 </dd>
 <dt id="synapse_test_helper.synapse_test_helper.SynapseTestHelper.wait_for_team_to_be_available"><code class="name flex">
-<span>def <span class="ident">wait_for_team_to_be_available</span></span>(<span>self, team)</span>
+<span>def <span class="ident">wait_for_team_to_be_available</span></span>(<span>self, team: synapseclient.Team) ‑> synapseclient.team.Team</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Waits for a newly created team to be available in Synapse.
@@ -1396,7 +1611,10 @@ There can be a delay from when a team is created and when syn.get() will return 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def wait_for_team_to_be_available(self, team):
+<pre><code class="python">def wait_for_team_to_be_available(
+        self,
+        team: synapseclient.Team
+) -&gt; synapseclient.Team:
     &#34;&#34;&#34;Waits for a newly created team to be available in Synapse.
     There can be a delay from when a team is created and when syn.get() will return it.
     &#34;&#34;&#34;
@@ -1404,7 +1622,7 @@ There can be a delay from when a team is created and when syn.get() will return 
     while True:
         tries += 1
         try:
-            self.client().getTeam(team.name)
+            return self.client.getTeam(team.name)
             break
         except ValueError:
             if tries &gt;= 10:

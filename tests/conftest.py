@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def syn_test_credentials():
     def _get():
         result = os.environ.get('TEST_SYNAPSE_AUTH_TOKEN', None)
@@ -21,25 +21,27 @@ def syn_test_credentials():
     yield _get
 
 
-@pytest.fixture(scope='session', autouse=True)
-def syn_client(syn_test_credentials):
-    syn_auth_token = syn_test_credentials()
-    synapse_client = synapseclient.Synapse(skip_checks=True, configPath='')
-    synapse_client.login(authToken=syn_auth_token, silent=True, rememberMe=False, forced=True)
-    assert SynapseTestHelper.configure(synapse_client)
-    return synapse_client
+@pytest.fixture()
+def mk_syn_client(syn_test_credentials):
+    def _m():
+        syn_auth_token = syn_test_credentials()
+        synapse_client = synapseclient.Synapse(skip_checks=True, configPath='')
+        synapse_client.login(authToken=syn_auth_token, silent=True, rememberMe=False, forced=True)
+        return synapse_client
 
-
-@pytest.fixture(autouse=True)
-def configure(syn_client):
-    assert SynapseTestHelper.configure(syn_client)
+    yield _m
 
 
 @pytest.fixture
-def synapse_test_helper(syn_client):
-    assert SynapseTestHelper.configure(syn_client)
-    with SynapseTestHelper() as sth:
-        yield sth
+def synapse_test_helper(mk_syn_client):
+    with SynapseTestHelper(mk_syn_client()) as synapse_test_helper:
+        assert synapse_test_helper.configured
+        yield synapse_test_helper
+
+
+@pytest.fixture()
+def syn_client(synapse_test_helper, mk_syn_client):
+    return synapse_test_helper.client
 
 
 @pytest.fixture
